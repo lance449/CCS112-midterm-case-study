@@ -77,10 +77,11 @@ const Login = () => {
                 placeholder="Enter your password here"
                 required
               />
-            </div>
-            
+            </div>    
             {loginError && <div className="text-danger text-center">{loginError}</div>} {/* Display login errors */}
-
+            <div className='d-flex justify-content-center'>
+              <button className="btn btn-primary btn-md mt-2">Log In</button>
+            </div>
             <div className="mt-2">
               <p style={{ textAlign: 'center' }}>
                 <a href="/SignUp" className="link-primary">Sign up</a>

@@ -10,7 +10,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const App = () => {
   return (
     <BrowserRouter>
-        <div className="container mt-4" style>
+        <div>
           <Routes>
             <Route exact path="/" element={<Login />} />
             <Route path="/signUp" element={<SignUp />} />
