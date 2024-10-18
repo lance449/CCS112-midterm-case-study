@@ -116,7 +116,7 @@ const SignUp = () => {
                 name="confirmPassword" 
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Re-Enter your password here"                
+                placeholder="Re-enter your password here"                
                 required 
               />
             </div>            
