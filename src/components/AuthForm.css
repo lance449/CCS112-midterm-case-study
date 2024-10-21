@@ -28,8 +28,10 @@ body, html {
   max-width: 400px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  max-height: 90vh; /* Limit the height to 90% of the viewport height */
-  overflow-y: auto; /* Allow vertical scrolling if content exceeds max-height */
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 10px;
 }
 
 .auth-card:hover {
@@ -75,4 +77,19 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
 }
