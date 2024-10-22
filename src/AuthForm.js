@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Envelope, Lock, Eye, EyeSlash } from 'react-bootstrap-icons';
+import { Eye, EyeSlash } from 'react-bootstrap-icons';
 import axios from 'axios';
 import './components/AuthForm.css';
 
@@ -37,10 +37,8 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
         <h2 className="text-center mb-4">{title}</h2>
         <Form onSubmit={handleSubmit}>
           {fields.map((field, index) => (
-            <Form.Group className="mb-3" controlId={`form${field.name}`} key={index}>
+            <Form.Group className="mb-4" controlId={`form${field.name}`} key={index}>
               <Form.Label>
-                {field.name === 'email' && <Envelope className="me-2" />}
-                {field.name.includes('password') && <Lock className="me-2" />}
                 {field.label}
               </Form.Label>
               <div className="position-relative">
@@ -53,12 +51,13 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
                   isInvalid={!!errors[field.name]}
                 />
                 {field.name.includes('password') && (
-                  <div
-                    className="position-absolute top-50 end-0 translate-middle-y me-2"
-                    style={{ cursor: 'pointer' }}
-                    onClick={field.name === 'password' ? togglePasswordVisibility : toggleConfirmPasswordVisibility}
-                  >
-                    {(field.name === 'password' ? showPassword : showConfirmPassword) ? <Eye /> : <EyeSlash />}
+                  <div className="password-toggle-wrapper">
+                    <div
+                      className="password-toggle"
+                      onClick={field.name === 'password' ? togglePasswordVisibility : toggleConfirmPasswordVisibility}
+                    >
+                      {(field.name === 'password' ? showPassword : showConfirmPassword) ? <Eye /> : <EyeSlash />}
+                    </div>
                   </div>
                 )}
                 <Form.Control.Feedback type="invalid">

@@ -80,7 +80,10 @@ const Dashboard = () => {
     <div>
       <h1>Dashboard</h1>
       <Form inline>
-        <h5><FontAwesomeIcon icon={faSearch}></FontAwesomeIcon> Search Item</h5>
+        <h5>Search Item</h5>
+        <Button onClick={searchItem}>
+          <FontAwesomeIcon icon={faSearch} /> Search item
+        </Button>         
         <Form.Control
           type="text"
           placeholder="Search by item name or category"
@@ -105,7 +108,7 @@ const Dashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <tr key={product.id}>
               <td>{product.barcode}</td>
               <td>{product.description}</td>

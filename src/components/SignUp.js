@@ -34,6 +34,8 @@ const SignUp = () => {
       submitText="Sign Up"
       altLink="/login"
       altText="Already have an account? Login"
+      onSubmit={handleSignUp}
+      errors={errors}
     />
   );
 };
