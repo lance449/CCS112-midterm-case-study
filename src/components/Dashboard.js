@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Modal } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faPlus } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
 const Dashboard = () => {
@@ -15,7 +14,6 @@ const Dashboard = () => {
     quantity: '',
     category: '',
   });
-
   const [editProduct, setEditProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -30,34 +28,22 @@ const Dashboard = () => {
 
   // Handle Add Product
   const handleAddProduct = async () => {
-    if (
-      !newProduct.barcode ||
-      !newProduct.description ||
-      !newProduct.price ||
-      !newProduct.quantity ||
-      !newProduct.category
-    ) {
+    if (!newProduct.barcode || !newProduct.description || !newProduct.price || !newProduct.quantity || !newProduct.category) {
       alert('Please fill out all fields before adding a product.');
       return;
     }
 
-    const existingProduct = products.find(
-      (product) => product.barcode === newProduct.barcode
-    );
-
+    const existingProduct = products.find(product => product.barcode === newProduct.barcode);
     if (existingProduct) {
       alert('A product with this barcode already exists.');
       return;
     }
 
-    console.log('Adding product:', newProduct); 
-
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/products', newProduct);
-      console.log('Product added:', response.data);
       setProducts([...products, response.data]);
-      setShowAdd(false); 
-      setNewProduct({ barcode: '', description: '', price: '', quantity: '', category: '' }); 
+      setShowAdd(false);
+      setNewProduct({ barcode: '', description: '', price: '', quantity: '', category: '' });
     } catch (error) {
       console.error('Error adding product:', error.response ? error.response.data : error.message);
     }
@@ -65,41 +51,43 @@ const Dashboard = () => {
 
   // Handle Edit Product
   const handleEditProduct = async () => {
-    await axios.put(`http://127.0.0.1:8000/api/products/${editProduct.id}`, editProduct);
-    setEditProduct(null);
-    window.location.reload();
+    try {
+      const response = await axios.put(`http://127.0.0.1:8000/api/products/${editProduct.id}`, editProduct);
+      setProducts(products.map(product => product.id === editProduct.id ? response.data : product));
+      setEditProduct(null);
+    } catch (error) {
+      console.error('Error editing product:', error.response ? error.response.data : error.message);
+    }
   };
 
   // Handle Delete Product
   const handleDeleteProduct = async (id) => {
-    await axios.delete(`http://127.0.0.1:8000/api/products/${id}`);
-    window.location.reload();
-  };
-
-  const searchItems = async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/products/search?query=${searchTerm}`);
-      setProducts(response.data); // Update state with search results
+      await axios.delete(`http://127.0.0.1:8000/api/products/${id}`);
+      setProducts(products.filter(product => product.id !== id));
     } catch (error) {
-      console.error('Error searching products:', error);
+      console.error('Error deleting product:', error.response ? error.response.data : error.message);
     }
   };
+
+  // Filter products based on search term
+  const filteredProducts = products.filter(product =>
+    product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div>
       <h1>Dashboard</h1>
       <Form inline>
-        <h5>Search Item</h5>
-        <Button onClick={searchItem}>
-          <FontAwesomeIcon icon={faSearch} /> Search item
-        </Button>         
+        <h5><FontAwesomeIcon icon={faSearch}></FontAwesomeIcon> Search Item</h5>
         <Form.Control
           type="text"
-          placeholder="Search by item name, or category"
+          placeholder="Search by item name or category"
           className="mr-sm-2"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-        />       
+        />
         <h5>Add a product:</h5>
         <Button onClick={() => setShowAdd(true)}>
           <FontAwesomeIcon icon={faPlus} /> Add Product
@@ -249,4 +237,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
