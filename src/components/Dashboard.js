@@ -90,7 +90,7 @@ const Dashboard = () => {
       <h1>Dashboard</h1>
       <Form inline>
         <h5>Search Item</h5>
-        <Button onClick={searchItem}>
+        <Button onClick={searchItems}>
           <FontAwesomeIcon icon={faSearch} /> Search item
         </Button>         
         <Form.Control
@@ -117,7 +117,7 @@ const Dashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <tr key={product.id}>
               <td>{product.barcode}</td>
               <td>{product.description}</td>
@@ -249,4 +249,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
