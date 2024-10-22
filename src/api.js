@@ -19,3 +19,17 @@ export const register = async (name, email, password, password_confirmation) => 
   }
 };
 
+export const login = async (email, password) => {
+  try {
+    const response = await axios.post(`${API_URL}/login`, {
+      email,
+      password
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 422) {
+      throw error.response.data;
+    }
+    throw new Error('An unexpected error occurred during login');
+  }
+};

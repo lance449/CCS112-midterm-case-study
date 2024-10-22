@@ -23,6 +23,7 @@ function AnimatedRoutes() {
           <div ref={nodeRef} className="route-container">
             <Routes location={location}>
               <Route path="/" element={<Login />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/signup" element={<SignUp />} />
             </Routes>
