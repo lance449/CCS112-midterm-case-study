@@ -18,7 +18,7 @@ const Dashboard = () => {
   // Fetch Products
   useEffect(() => {
     const fetchProducts = async () => {
-      const response = await axios.get('http://your-api-url/products');
+      const response = await axios.get('http://127.0.0.1:8000/api/products');
       setProducts(response.data);
     };
     fetchProducts();
@@ -26,21 +26,49 @@ const Dashboard = () => {
 
   // Handle Add Product
   const handleAddProduct = async () => {
-    await axios.post('http://your-api-url/products', newProduct);
-    setShowAdd(false);
-    window.location.reload();
+    if (
+      !newProduct.barcode ||
+      !newProduct.description ||
+      !newProduct.price ||
+      !newProduct.quantity ||
+      !newProduct.category
+    ) {
+      alert('Please fill out all fields before adding a product.');
+      return;
+    }
+
+    const existingProduct = products.find(
+      (product) => product.barcode === newProduct.barcode
+    );
+
+    if (existingProduct) {
+      alert('A product with this barcode already exists.');
+      return;
+    }
+
+    console.log('Adding product:', newProduct); 
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/products', newProduct);
+      console.log('Product added:', response.data);
+      setProducts([...products, response.data]);
+      setShowAdd(false); 
+      setNewProduct({ barcode: '', description: '', price: '', quantity: '', category: '' }); 
+    } catch (error) {
+      console.error('Error adding product:', error.response ? error.response.data : error.message);
+    }
   };
 
   // Handle Edit Product
   const handleEditProduct = async () => {
-    await axios.put(`http://your-api-url/products/${editProduct.id}`, editProduct);
+    await axios.put(`http://127.0.0.1:8000/api/products/${editProduct.id}`, editProduct);
     setEditProduct(null);
     window.location.reload();
   };
 
   // Handle Delete Product
   const handleDeleteProduct = async (id) => {
-    await axios.delete(`http://your-api-url/products/${id}`);
+    await axios.delete(`http://127.0.0.1:8000/api/products/${id}`);
     window.location.reload();
   };
 
