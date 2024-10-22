@@ -86,11 +86,11 @@ const Dashboard = () => {
   };
 
   return (
-    <div>
+    <div className = "dashboard container">
       <h1>Dashboard</h1>
       <Form inline>
         <h5>Search Item</h5>
-        <Button onClick={searchItems}>
+        <Button onClick={searchItem}>
           <FontAwesomeIcon icon={faSearch} /> Search item
         </Button>         
         <Form.Control
@@ -117,7 +117,7 @@ const Dashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <tr key={product.id}>
               <td>{product.barcode}</td>
               <td>{product.description}</td>
@@ -249,3 +249,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
