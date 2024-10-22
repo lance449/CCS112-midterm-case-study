@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
+import Dashboard from './components/Dashboard';
 import './components/AuthForm.css';
 
 function AnimatedRoutes() {
@@ -22,7 +23,7 @@ function AnimatedRoutes() {
           <div ref={nodeRef} className="route-container">
             <Routes location={location}>
               <Route path="/" element={<Login />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/signup" element={<SignUp />} />
             </Routes>
           </div>

@@ -28,17 +28,13 @@ const SignUp = () => {
   };
 
   return (
-    <>
-      <AuthForm
-        title="Sign Up"
-        fields={fields}
-        submitText="Sign Up"
-        altLink="/login"
-        altText="Already have an account? Login"
-        onSubmit={handleSignUp}
-        errors={errors}
-      />
-    </>
+    <AuthForm
+      title="Sign Up"
+      fields={fields}
+      submitText="Sign Up"
+      altLink="/login"
+      altText="Already have an account? Login"
+    />
   );
 };
 
