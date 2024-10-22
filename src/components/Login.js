@@ -15,11 +15,12 @@ const Login = () => {
 
   const handleLogin = async (formData) => {
     try {
-      await login(formData.email, formData.password);
+      const response = await login(formData.email, formData.password);
+      localStorage.setItem('token', response.token);
       navigate('/dashboard');
     } catch (error) {
-      if (error.errors) {
-        setErrors(error.errors);
+      if (error.message) {
+        setErrors({ general: error.message });
       } else {
         setErrors({ general: 'An unexpected error occurred during login' });
       }

@@ -27,7 +27,7 @@ export const login = async (email, password) => {
     });
     return response.data;
   } catch (error) {
-    if (error.response && error.response.status === 422) {
+    if (error.response) {
       throw error.response.data;
     }
     throw new Error('An unexpected error occurred during login');
