@@ -13,7 +13,7 @@ const SignUp = () => {
       title="Sign Up"
       fields={fields}
       submitText="Sign Up"
-      altLink="/login"
+      altLink="/"
       altText="Already have an account? Login"
     />
   );

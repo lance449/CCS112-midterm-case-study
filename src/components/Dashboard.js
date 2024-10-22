@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Modal } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
 const Dashboard = () => {
@@ -14,6 +17,7 @@ const Dashboard = () => {
   });
 
   const [editProduct, setEditProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch Products
   useEffect(() => {
@@ -72,10 +76,35 @@ const Dashboard = () => {
     window.location.reload();
   };
 
+  const searchItems = async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/products/search?query=${searchTerm}`);
+      setProducts(response.data); // Update state with search results
+    } catch (error) {
+      console.error('Error searching products:', error);
+    }
+  };
+
   return (
     <div>
       <h1>Dashboard</h1>
-      <Button onClick={() => setShowAdd(true)}>Add Product</Button>
+      <Form inline>
+        <h5>Search Item</h5>
+        <Button onClick={searchItem}>
+          <FontAwesomeIcon icon={faSearch} /> Search item
+        </Button>         
+        <Form.Control
+          type="text"
+          placeholder="Search by item name, or category"
+          className="mr-sm-2"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />       
+        <h5>Add a product:</h5>
+        <Button onClick={() => setShowAdd(true)}>
+          <FontAwesomeIcon icon={faPlus} /> Add Product
+        </Button>
+      </Form>
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -88,7 +117,7 @@ const Dashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <tr key={product.id}>
               <td>{product.barcode}</td>
               <td>{product.description}</td>
@@ -220,3 +249,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
