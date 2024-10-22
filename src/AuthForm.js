@@ -1,45 +1,18 @@
 import React, { useState } from 'react';
-import { Card, Form, Button } from 'react-bootstrap';
+import { Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Envelope, Lock, Eye, EyeSlash } from 'react-bootstrap-icons';
 import axios from 'axios';
-import './AuthForm.css';
+import './components/AuthForm.css';
 
-const AuthForm = ({ title, fields, submitText, altLink, altText }) => {
+const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, errors = {} }) => {
   const [formData, setFormData] = useState({});
-  const [email, setEmail] = useState('');
-  const [isEmailValid, setIsEmailValid] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState(null);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted with data:', formData);
-    // Add your auth logic here
-  };
-
-  const validateEmail = (email) => {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return re.test(String(email).toLowerCase());
-  };
-
-  const handleEmailChange = (e) => {
-    const newEmail = e.target.value;
-    setEmail(newEmail);
-    setIsEmailValid(validateEmail(newEmail));
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
+    onSubmit(formData);
   };
 
   const handleInputChange = (e) => {
@@ -48,6 +21,14 @@ const AuthForm = ({ title, fields, submitText, altLink, altText }) => {
       ...prevData,
       [name]: value
     }));
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   return (
@@ -63,66 +44,32 @@ const AuthForm = ({ title, fields, submitText, altLink, altText }) => {
                 {field.label}
               </Form.Label>
               <div className="position-relative">
-                {field.name === 'email' ? (
-                  <Form.Control
-                    type={field.type}
-                    name={field.name}
-                    placeholder={field.placeholder}
-                    value={formData[field.name] || ''}
-                    onChange={handleInputChange}
-                    isInvalid={!isEmailValid}
-                  />
-                ) : field.name === 'password' ? (
-                  <>
-                    <Form.Control
-                      type={showPassword ? 'text' : 'password'}
-                      name={field.name}
-                      placeholder={field.placeholder}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                    />
-                    <div
-                      className="position-absolute top-50 end-0 translate-middle-y me-2"
-                      style={{ cursor: 'pointer' }}
-                      onClick={togglePasswordVisibility}
-                    >
-                      {showPassword ? <Eye /> : <EyeSlash />}
-                    </div>
-                  </>
-                ) : field.name === 'confirmPassword' ? (
-                  <>
-                    <Form.Control
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      name={field.name}
-                      placeholder={field.placeholder}
-                      value={formData[field.name] || ''}
-                      onChange={handleInputChange}
-                    />
-                    <div
-                      className="position-absolute top-50 end-0 translate-middle-y me-2"
-                      style={{ cursor: 'pointer' }}
-                      onClick={toggleConfirmPasswordVisibility}
-                    >
-                      {showConfirmPassword ? <Eye /> : <EyeSlash />}
-                    </div>
-                  </>
-                ) : (
-                  <Form.Control 
-                    type={field.type} 
-                    name={field.name}
-                    placeholder={field.placeholder} 
-                    value={formData[field.name] || ''}
-                    onChange={handleInputChange}
-                  />
+                <Form.Control
+                  type={field.name.includes('password') ? (field.name === 'password' ? (showPassword ? 'text' : 'password') : (showConfirmPassword ? 'text' : 'password')) : field.type}
+                  name={field.name}
+                  placeholder={field.placeholder}
+                  value={formData[field.name] || ''}
+                  onChange={handleInputChange}
+                  isInvalid={!!errors[field.name]}
+                />
+                {field.name.includes('password') && (
+                  <div
+                    className="position-absolute top-50 end-0 translate-middle-y me-2"
+                    style={{ cursor: 'pointer' }}
+                    onClick={field.name === 'password' ? togglePasswordVisibility : toggleConfirmPasswordVisibility}
+                  >
+                    {(field.name === 'password' ? showPassword : showConfirmPassword) ? <Eye /> : <EyeSlash />}
+                  </div>
                 )}
+                <Form.Control.Feedback type="invalid">
+                  {errors[field.name]}
+                </Form.Control.Feedback>
               </div>
-              {field.name === 'email' && !isEmailValid && (
-                <Form.Text className="text-danger">
-                  Please enter a valid email address.
-                </Form.Text>
-              )}
             </Form.Group>
           ))}
+          {errors.general && (
+            <Alert variant="danger">{errors.general}</Alert>
+          )}
           <Button variant="primary" type="submit" className="w-100 mb-3">
             {submitText}
           </Button>

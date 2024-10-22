@@ -1,6 +1,6 @@
 // login.js
 import React from 'react';
-import AuthForm from './AuthForm';
+import AuthForm from '../AuthForm';
 
 const Login = () => {
   const fields = [
