@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Form, Modal } from 'react-bootstrap';
+import { Container, Row, Col, Table, Button, Form, Modal, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faPlus, faEdit, faTrash, faTimes } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import { debounce } from 'lodash';
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
@@ -50,14 +50,19 @@ const Dashboard = () => {
       return;
     }
 
-    console.log('Adding product:', newProduct); 
+    const productToAdd = {
+      ...newProduct,
+      price: parseFloat(newProduct.price) || 0
+    };
+
+    console.log('Adding product:', productToAdd);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/products', newProduct);
+      const response = await axios.post('http://127.0.0.1:8000/api/products', productToAdd);
       console.log('Product added:', response.data);
       setProducts([...products, response.data]);
-      setShowAdd(false); 
-      setNewProduct({ barcode: '', description: '', price: '', quantity: '', category: '' }); 
+      setShowAdd(false);
+      setNewProduct({ barcode: '', description: '', price: '', quantity: '', category: '' });
     } catch (error) {
       console.error('Error adding product:', error.response ? error.response.data : error.message);
     }
@@ -76,62 +81,125 @@ const Dashboard = () => {
     window.location.reload();
   };
 
-  const searchItems = async () => {
+  const handleSearch = async (searchTerm) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/products/search?query=${searchTerm}`);
-      setProducts(response.data); // Update state with search results
+      if (searchTerm.trim() === '') {
+        // If the search term is empty, fetch all products
+        const response = await axios.get('http://127.0.0.1:8000/api/products');
+        setProducts(response.data);
+      } else {
+        const response = await axios.get(`http://127.0.0.1:8000/api/products/search?query=${searchTerm}`);
+        setProducts(response.data);
+      }
     } catch (error) {
       console.error('Error searching products:', error);
+      // Optionally, you can set an error state here to display to the user
     }
   };
 
+  const debouncedSearch = debounce((term) => {
+    handleSearch(term);
+  }, 300);
+
   return (
-    <div className = "dashboard container">
-      <h1>Dashboard</h1>
-      <Form inline>
-        <h5>Search Item</h5>
-        <Button onClick={searchItems}>
-          <FontAwesomeIcon icon={faSearch} /> Search item
-        </Button>         
-        <Form.Control
-          type="text"
-          placeholder="Search by item name, or category"
-          className="mr-sm-2"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />       
-        <h5>Add a product:</h5>
-        <Button onClick={() => setShowAdd(true)}>
-          <FontAwesomeIcon icon={faPlus} /> Add Product
-        </Button>
-      </Form>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Barcode</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Category</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id}>
-              <td>{product.barcode}</td>
-              <td>{product.description}</td>
-              <td>{product.price}</td>
-              <td>{product.quantity}</td>
-              <td>{product.category}</td>
-              <td>
-                <Button onClick={() => setEditProduct(product)}>Edit</Button>
-                <Button variant="danger" onClick={() => handleDeleteProduct(product.id)}>Delete</Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+    <Container fluid className="dashboard py-4">
+      <Row className="mb-4">
+        <Col>
+          <h1 className="text-primary">Product Dashboard</h1>
+        </Col>
+      </Row>
+      <Row className="mb-4">
+        <Col md={6}>
+          <Card>
+            <Card.Body>
+              <h5 className="mb-3">Search Item</h5>
+              <Form className="d-flex" onSubmit={(e) => e.preventDefault()}>
+                <div className="position-relative flex-grow-1 mr-2">
+                  <Form.Control
+                    type="text"
+                    placeholder="Search by item name or category"
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      debouncedSearch(e.target.value);
+                    }}
+                    onKeyUp={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch(searchTerm);
+                      }
+                    }}
+                  />
+                  {searchTerm && (
+                    <Button
+                      variant="link"
+                      className="position-absolute"
+                      style={{ right: '10px', top: '50%', transform: 'translateY(-50%)' }}
+                      onClick={() => {
+                        setSearchTerm('');
+                        handleSearch('');
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </Button>
+                  )}
+                </div>
+                <Button variant="outline-primary" onClick={() => handleSearch(searchTerm)}>
+                  <FontAwesomeIcon icon={faSearch} /> Search
+                </Button>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={6}>
+          <Card>
+            <Card.Body>
+              <h5 className="mb-3">Add a product</h5>
+              <Button variant="success" onClick={() => setShowAdd(true)}>
+                <FontAwesomeIcon icon={faPlus} /> Add Product
+              </Button>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Card>
+            <Card.Body>
+              <Table responsive striped bordered hover>
+                <thead className="bg-light">
+                  <tr>
+                    <th>Barcode</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Category</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => (
+                    <tr key={product.id}>
+                      <td>{product.barcode}</td>
+                      <td>{product.description}</td>
+                      <td>${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
+                      <td>{product.quantity}</td>
+                      <td>{product.category}</td>
+                      <td>
+                        <Button variant="outline-primary" size="sm" className="mr-2" onClick={() => setEditProduct(product)}>
+                          <FontAwesomeIcon icon={faEdit} /> Edit
+                        </Button>
+                        <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProduct(product.id)}>
+                          <FontAwesomeIcon icon={faTrash} /> Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
       {/* Add Product Modal */}
       <Modal show={showAdd} onHide={() => setShowAdd(false)}>
@@ -244,7 +312,7 @@ const Dashboard = () => {
           </Modal.Footer>
         </Modal>
       )}
-    </div>
+    </Container>
   );
 };
 
