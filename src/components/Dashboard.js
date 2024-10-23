@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Table, Button, Form, Modal, Card, Navbar, Nav } from 'react-bootstrap';
+import { Container, Row, Col, Table, Button, Form, Modal, Card, Navbar, Nav, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPlus, faEdit, faTrash, faTimes, faSignOutAlt, faBox, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
@@ -21,68 +21,80 @@ const Dashboard = () => {
   const [editProduct, setEditProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  const [addErrors, setAddErrors] = useState({});
+  const [editErrors, setEditErrors] = useState({});
+
+  const [productToDelete, setProductToDelete] = useState(null);
+
   const navigate = useNavigate();
 
-  // Fetch Products
-  useEffect(() => {
-    const fetchProducts = async () => {
+  const fetchProducts = async () => {
+    try {
       const response = await axios.get('http://127.0.0.1:8000/api/products');
       setProducts(response.data);
-    };
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchProducts();
   }, []);
 
   // Handle Add Product
   const handleAddProduct = async () => {
-    if (
-      !newProduct.barcode ||
-      !newProduct.description ||
-      !newProduct.price ||
-      !newProduct.quantity ||
-      !newProduct.category
-    ) {
-      alert('Please fill out all fields before adding a product.');
-      return;
-    }
-
-    const existingProduct = products.find(
-      (product) => product.barcode === newProduct.barcode
-    );
-
-    if (existingProduct) {
-      alert('A product with this barcode already exists.');
-      return;
-    }
-
-    const productToAdd = {
-      ...newProduct,
-      price: parseFloat(newProduct.price) || 0
-    };
-
-    console.log('Adding product:', productToAdd);
-
+    setAddErrors({});
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/products', productToAdd);
-      console.log('Product added:', response.data);
+      const response = await axios.post('http://127.0.0.1:8000/api/products', newProduct);
       setProducts([...products, response.data]);
       setShowAdd(false);
-      setNewProduct({ barcode: '', description: '', price: '', quantity: '', category: '' });
+      setNewProduct({
+        barcode: '',
+        description: '',
+        price: '',
+        quantity: '',
+        category: '',
+      });
     } catch (error) {
-      console.error('Error adding product:', error.response ? error.response.data : error.message);
+      if (error.response && error.response.data.errors) {
+        setAddErrors(error.response.data.errors);
+      } else {
+        setAddErrors({ general: 'An error occurred while adding the product.' });
+      }
     }
   };
 
   // Handle Edit Product
   const handleEditProduct = async () => {
-    await axios.put(`http://127.0.0.1:8000/api/products/${editProduct.id}`, editProduct);
-    setEditProduct(null);
-    window.location.reload();
+    setEditErrors({});
+    try {
+      const response = await axios.put(`http://127.0.0.1:8000/api/products/${editProduct.id}`, editProduct);
+      if (response.status === 200) {
+        setEditProduct(null);
+        fetchProducts();
+      }
+    } catch (error) {
+      if (error.response && error.response.data.errors) {
+        setEditErrors(error.response.data.errors);
+      } else {
+        setEditErrors({ general: 'An error occurred while updating the product.' });
+      }
+    }
   };
 
-  // Handle Delete Product
-  const handleDeleteProduct = async (id) => {
-    await axios.delete(`http://127.0.0.1:8000/api/products/${id}`);
-    window.location.reload();
+  const handleDeleteProduct = (product) => {
+    setProductToDelete(product);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/products/${productToDelete.id}`);
+      fetchProducts();
+      setProductToDelete(null);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      // Optionally, you can set an error state here to display to the user
+    }
   };
 
   const handleSearch = async (searchTerm) => {
@@ -117,7 +129,7 @@ const Dashboard = () => {
         <Container>
           <Navbar.Brand href="#home">
             <FontAwesomeIcon icon={faBox} className="me-2" />
-            Inventory Management
+            E-Commerce Product Management
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
@@ -207,7 +219,7 @@ const Dashboard = () => {
                       <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setEditProduct(product)}>
                         <FontAwesomeIcon icon={faEdit} className="me-1" /> Edit
                       </Button>
-                      <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProduct(product.id)}>
+                      <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProduct(product)}>
                         <FontAwesomeIcon icon={faTrash} className="me-1" /> Delete
                       </Button>
                     </td>
@@ -226,13 +238,16 @@ const Dashboard = () => {
         </Modal.Header>
         <Modal.Body>
           <Form>
+            {addErrors.general && <Alert variant="danger">{addErrors.general}</Alert>}
             <Form.Group controlId="barcode">
               <Form.Label>Barcode</Form.Label>
               <Form.Control
                 type="text"
                 value={newProduct.barcode}
                 onChange={(e) => setNewProduct({ ...newProduct, barcode: e.target.value })}
+                isInvalid={!!addErrors.barcode}
               />
+              <Form.Control.Feedback type="invalid">{addErrors.barcode}</Form.Control.Feedback>
             </Form.Group>
             <Form.Group controlId="description">
               <Form.Label>Description</Form.Label>
@@ -282,13 +297,16 @@ const Dashboard = () => {
           </Modal.Header>
           <Modal.Body>
             <Form>
+              {editErrors.general && <Alert variant="danger">{editErrors.general}</Alert>}
               <Form.Group controlId="barcode">
                 <Form.Label>Barcode</Form.Label>
                 <Form.Control
                   type="text"
                   value={editProduct.barcode}
                   onChange={(e) => setEditProduct({ ...editProduct, barcode: e.target.value })}
+                  isInvalid={!!editErrors.barcode}
                 />
+                <Form.Control.Feedback type="invalid">{editErrors.barcode}</Form.Control.Feedback>
               </Form.Group>
               <Form.Group controlId="description">
                 <Form.Label>Description</Form.Label>
@@ -327,6 +345,26 @@ const Dashboard = () => {
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setEditProduct(null)}>Close</Button>
             <Button variant="primary" onClick={handleEditProduct}>Update Product</Button>
+          </Modal.Footer>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {productToDelete && (
+        <Modal show={true} onHide={() => setProductToDelete(null)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Delete</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Are you sure you want to delete the product "{productToDelete.description}"?
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setProductToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmDelete}>
+              Delete
+            </Button>
           </Modal.Footer>
         </Modal>
       )}
