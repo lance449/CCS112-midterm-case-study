@@ -1,7 +1,7 @@
 // App.js
-import React, { useRef } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import { CSSTransition, SwitchTransition } from 'react-transition-group';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
 import Dashboard from './components/Dashboard';
@@ -9,27 +9,23 @@ import './components/AuthForm.css';
 
 function AnimatedRoutes() {
   const location = useLocation();
-  const nodeRef = useRef(null);
 
   return (
     <div className="auth-wrapper">
-      <TransitionGroup component={null}>
+      <SwitchTransition>
         <CSSTransition
           key={location.pathname}
           classNames="fade"
           timeout={300}
-          nodeRef={nodeRef}
         >
-          <div ref={nodeRef} className="route-container">
-            <Routes location={location}>
-              <Route path="/" element={<Login />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/signup" element={<SignUp />} />
-            </Routes>
-          </div>
+          <Routes location={location}>
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/signup" element={<SignUp />} />
+          </Routes>
         </CSSTransition>
-      </TransitionGroup>
+      </SwitchTransition>
     </div>
   );
 }

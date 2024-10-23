@@ -10,124 +10,156 @@ body, html {
   overflow: hidden; /* This prevents scrollbars on the root element */
 }
 
-.auth-container {
-  position: fixed; /* This keeps the container fixed in place */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.auth-page {
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   background-color: #f8f9fa;
-  overflow: hidden; /* This prevents scrollbars on the container */
 }
 
-.auth-card {
+.auth-container {
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  max-height: 90vh;
-  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.auth-form-container {
   background-color: #ffffff;
-  border-radius: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 30px;
 }
 
-.auth-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+.auth-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
 }
 
-.auth-card::-webkit-scrollbar {
-  width: 6px;
+.auth-logo svg {
+  color: #007bff;
 }
 
-.auth-card::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+.auth-title {
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.auth-form-group {
+  margin-bottom: 16px;
+}
+
+.auth-form-group label {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.auth-input-wrapper {
+  position: relative;
+}
+
+.auth-form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.auth-form-group input:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.auth-error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.auth-alert {
+  margin-bottom: 24px;
+}
+
+.auth-submit-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  margin-top: 16px;
+}
+
+.auth-submit-btn:hover {
+  background-color: #0056b3;
+}
+
+.auth-alt-link {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.auth-alt-link a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-alt-link a:hover {
+  text-decoration: underline;
+}
+
+.auth-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .fade-enter {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateX(50px);
 }
 
 .fade-enter-active {
   opacity: 1;
-  transform: translateY(0);
-  transition: opacity 300ms ease-out, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translateX(0);
+  transition: opacity 300ms ease-in, transform 300ms ease-in;
 }
 
 .fade-exit {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(0);
 }
 
 .fade-exit-active {
   opacity: 0;
-  transform: translateY(-20px);
-  transition: opacity 300ms ease-out, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.route-container {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  will-change: opacity, transform;
-  transition: opacity 300ms ease-out, transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.form-control:focus {
-  border-color: #80bdff;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-.form-control.is-invalid {
-  padding-right: 4.5rem !important;
-}
-
-.position-relative {
-  position: relative;
-  margin-bottom: 1.5rem;
-}
-
-.password-toggle-wrapper {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  z-index: 5;
-}
-
-.password-toggle {
-  cursor: pointer;
-}
-
-.form-control {
-  padding-right: 2.5rem;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
-}
-
-.invalid-feedback {
-  position: absolute;
-  left: 0;
-  bottom: -1.25rem;
-  font-size: 0.875rem;
-}
-
-.form-control.is-invalid ~ .password-toggle-wrapper {
-  right: 2.5rem;
+  transform: translateX(-50px);
+  transition: opacity 300ms ease-in, transform 300ms ease-in;
 }

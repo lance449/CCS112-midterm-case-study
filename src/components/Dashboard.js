@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Table, Button, Form, Modal, Card } from 'react-bootstrap';
+import { Container, Row, Col, Table, Button, Form, Modal, Card, Navbar, Nav } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faPlus, faEdit, faTrash, faTimes, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faPlus, faEdit, faTrash, faTimes, faSignOutAlt, faBox, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { debounce } from 'lodash';
 import { useNavigate } from 'react-router-dom';
@@ -112,24 +112,35 @@ const Dashboard = () => {
   };
 
   return (
-    <Container fluid className="dashboard py-4">
-      <Row className="mb-4">
-        <Col>
-          <h1 className="text-primary">Product Dashboard</h1>
-        </Col>
-        <Col xs="auto">
-          <Button variant="outline-danger" onClick={handleLogout}>
-            <FontAwesomeIcon icon={faSignOutAlt} /> Logout
-          </Button>
-        </Col>
-      </Row>
-      <Row className="mb-4">
-        <Col md={6}>
-          <Card>
-            <Card.Body>
-              <h5 className="mb-3">Search Item</h5>
-              <Form className="d-flex" onSubmit={(e) => e.preventDefault()}>
-                <div className="position-relative flex-grow-1 mr-2">
+    <div className="dashboard bg-light min-vh-100">
+      <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+        <Container>
+          <Navbar.Brand href="#home">
+            <FontAwesomeIcon icon={faBox} className="me-2" />
+            Inventory Management
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
+            <Nav>
+              <Button variant="outline-light" onClick={handleLogout}>
+                <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
+                Logout
+              </Button>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+
+      <Container fluid className="py-4">
+        <Row className="mb-4">
+          <Col md={6}>
+            <Card className="shadow-sm">
+              <Card.Body>
+                <h5 className="mb-3">
+                  <FontAwesomeIcon icon={faSearch} className="me-2" />
+                  Search Item
+                </h5>
+                <Form className="d-flex" onSubmit={(e) => e.preventDefault()}>
                   <Form.Control
                     type="text"
                     placeholder="Search by item name or category"
@@ -144,77 +155,69 @@ const Dashboard = () => {
                       }
                     }}
                   />
-                  {searchTerm && (
-                    <Button
-                      variant="link"
-                      className="position-absolute"
-                      style={{ right: '10px', top: '50%', transform: 'translateY(-50%)' }}
-                      onClick={() => {
-                        setSearchTerm('');
-                        handleSearch('');
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faTimes} />
-                    </Button>
-                  )}
-                </div>
-                <Button variant="outline-primary" onClick={() => handleSearch(searchTerm)}>
-                  <FontAwesomeIcon icon={faSearch} /> Search
+                  <Button variant="primary" className="ms-2" onClick={() => handleSearch(searchTerm)}>
+                    <FontAwesomeIcon icon={faSearch} />
+                  </Button>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={6}>
+            <Card className="shadow-sm">
+              <Card.Body>
+                <h5 className="mb-3">
+                  <FontAwesomeIcon icon={faPlus} className="me-2" />
+                  Add a product
+                </h5>
+                <Button variant="success" onClick={() => setShowAdd(true)}>
+                  <FontAwesomeIcon icon={faPlus} className="me-2" />
+                  Add Product
                 </Button>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6}>
-          <Card>
-            <Card.Body>
-              <h5 className="mb-3">Add a product</h5>
-              <Button variant="success" onClick={() => setShowAdd(true)}>
-                <FontAwesomeIcon icon={faPlus} /> Add Product
-              </Button>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Card>
-            <Card.Body>
-              <Table responsive striped bordered hover>
-                <thead className="bg-light">
-                  <tr>
-                    <th>Barcode</th>
-                    <th>Description</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Category</th>
-                    <th>Actions</th>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+
+        <Card className="shadow-sm">
+          <Card.Body>
+            <h5 className="mb-3">
+              <FontAwesomeIcon icon={faChartLine} className="me-2" />
+              Product Inventory
+            </h5>
+            <Table responsive striped bordered hover>
+              <thead className="bg-light">
+                <tr>
+                  <th>Barcode</th>
+                  <th>Description</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th>Category</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product.id}>
+                    <td>{product.barcode}</td>
+                    <td>{product.description}</td>
+                    <td>${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
+                    <td>{product.quantity}</td>
+                    <td>{product.category}</td>
+                    <td>
+                      <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setEditProduct(product)}>
+                        <FontAwesomeIcon icon={faEdit} className="me-1" /> Edit
+                      </Button>
+                      <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProduct(product.id)}>
+                        <FontAwesomeIcon icon={faTrash} className="me-1" /> Delete
+                      </Button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {products.map((product) => (
-                    <tr key={product.id}>
-                      <td>{product.barcode}</td>
-                      <td>{product.description}</td>
-                      <td>${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
-                      <td>{product.quantity}</td>
-                      <td>{product.category}</td>
-                      <td>
-                        <Button variant="outline-primary" size="sm" className="mr-2" onClick={() => setEditProduct(product)}>
-                          <FontAwesomeIcon icon={faEdit} /> Edit
-                        </Button>
-                        <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProduct(product.id)}>
-                          <FontAwesomeIcon icon={faTrash} /> Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+                ))}
+              </tbody>
+            </Table>
+          </Card.Body>
+        </Card>
+      </Container>
 
       {/* Add Product Modal */}
       <Modal show={showAdd} onHide={() => setShowAdd(false)}>
@@ -327,7 +330,7 @@ const Dashboard = () => {
           </Modal.Footer>
         </Modal>
       )}
-    </Container>
+    </div>
   );
 };
 
