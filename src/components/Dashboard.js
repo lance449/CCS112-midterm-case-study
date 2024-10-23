@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Table, Button, Form, Modal, Card } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faPlus, faEdit, faTrash, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faPlus, faEdit, faTrash, faTimes, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { debounce } from 'lodash';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '../api';
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
@@ -18,6 +20,8 @@ const Dashboard = () => {
 
   const [editProduct, setEditProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const navigate = useNavigate();
 
   // Fetch Products
   useEffect(() => {
@@ -101,11 +105,22 @@ const Dashboard = () => {
     handleSearch(term);
   }, 300);
 
+  const handleLogout = async () => {
+    await logout();
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
   return (
     <Container fluid className="dashboard py-4">
       <Row className="mb-4">
         <Col>
           <h1 className="text-primary">Product Dashboard</h1>
+        </Col>
+        <Col xs="auto">
+          <Button variant="outline-danger" onClick={handleLogout}>
+            <FontAwesomeIcon icon={faSignOutAlt} /> Logout
+          </Button>
         </Col>
       </Row>
       <Row className="mb-4">

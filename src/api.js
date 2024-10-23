@@ -33,3 +33,17 @@ export const login = async (email, password) => {
     throw new Error('An unexpected error occurred during login');
   }
 };
+
+export const logout = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    await axios.post(`${API_URL}/logout`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  } catch (error) {
+    console.error('Error during logout:', error);
+    throw error;
+  }
+};
