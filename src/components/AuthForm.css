@@ -2,12 +2,11 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* This prevents scrollbars on the body */
+  overflow-x: hidden;
 }
 
 #root {
   height: 100%;
-  overflow: hidden; /* This prevents scrollbars on the root element */
 }
 
 .auth-page {
@@ -16,51 +15,55 @@ body, html {
   align-items: center;
   justify-content: center;
   background-color: #f8f9fa;
+  padding: 0.5rem;
 }
 
 .auth-container {
   width: 100%;
-  max-width: 400px;
-  padding: 20px;
+  max-width: 380px;
+  margin: 1rem auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 100vh;
 }
 
 .auth-form-container {
   background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: clamp(16px, 4vw, 24px);
+  width: 100%;
 }
 
 .auth-logo {
   display: flex;
   justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: clamp(12px, 3vw, 16px);
 }
 
 .auth-logo svg {
   color: #007bff;
+  width: clamp(28px, 6vw, 36px);
+  height: auto;
 }
 
 .auth-title {
-  font-size: 22px;
+  font-size: clamp(16px, 3.5vw, 20px);
   font-weight: 600;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: clamp(12px, 3vw, 16px);
   color: #333;
 }
 
 .auth-form-group {
-  margin-bottom: 16px;
+  margin-bottom: clamp(10px, 2.5vw, 14px);
 }
 
 .auth-form-group label {
-  font-size: 14px;
-  margin-bottom: 8px;
+  font-size: clamp(12px, 2vw, 14px);
+  margin-bottom: 4px;
   color: #555;
+  display: block;
 }
 
 .auth-input-wrapper {
@@ -69,50 +72,53 @@ body, html {
 
 .auth-form-group input {
   width: 100%;
-  padding: 10px;
+  padding: clamp(6px, 1.5vw, 8px);
   border: 1px solid #ced4da;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: clamp(13px, 2vw, 14px);
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .auth-form-group input:focus {
   border-color: #80bdff;
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
 }
 
 .password-toggle {
   position: absolute;
   top: 50%;
-  right: 12px;
+  right: 8px;
   transform: translateY(-50%);
   cursor: pointer;
   color: #6c757d;
+  font-size: clamp(12px, 2vw, 14px);
 }
 
 .auth-error {
   color: #dc3545;
-  font-size: 14px;
+  font-size: clamp(11px, 2vw, 12px);
   margin-top: 4px;
 }
 
 .auth-alert {
-  margin-bottom: 24px;
+  margin-bottom: clamp(12px, 3vw, 16px);
+  font-size: clamp(12px, 2vw, 14px);
+  padding: 8px;
 }
 
 .auth-submit-btn {
   width: 100%;
-  padding: 10px;
-  font-size: 14px;
-  font-weight: 600;
+  padding: clamp(8px, 2vw, 10px);
+  font-size: clamp(13px, 2vw, 14px);
+  font-weight: 500;
   background-color: #007bff;
   border: none;
   border-radius: 4px;
   color: #ffffff;
   cursor: pointer;
   transition: background-color 0.15s ease-in-out;
-  margin-top: 16px;
+  margin-top: clamp(12px, 3vw, 16px);
 }
 
 .auth-submit-btn:hover {
@@ -121,8 +127,8 @@ body, html {
 
 .auth-alt-link {
   text-align: center;
-  margin-top: 16px;
-  font-size: 14px;
+  margin-top: clamp(12px, 3vw, 16px);
+  font-size: clamp(12px, 2vw, 13px);
 }
 
 .auth-alt-link a {
@@ -135,22 +141,33 @@ body, html {
   text-decoration: underline;
 }
 
-.auth-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
+/* Media Queries */
+@media (max-width: 380px) {
+  .auth-form-container {
+    padding: 16px;
+  }
+  
+  .auth-container {
+    margin: 0.5rem auto;
+  }
 }
 
+@media (min-width: 768px) {
+  .auth-form-container {
+    padding: 24px;
+  }
+}
+
+/* Animation styles */
 .fade-enter {
   opacity: 0;
-  transform: translateX(50px);
+  transform: translateX(20px);
 }
 
 .fade-enter-active {
   opacity: 1;
   transform: translateX(0);
-  transition: opacity 300ms ease-in, transform 300ms ease-in;
+  transition: opacity 250ms ease-in, transform 250ms ease-in;
 }
 
 .fade-exit {
@@ -160,6 +177,6 @@ body, html {
 
 .fade-exit-active {
   opacity: 0;
-  transform: translateX(-50px);
-  transition: opacity 300ms ease-in, transform 300ms ease-in;
+  transform: translateX(-20px);
+  transition: opacity 250ms ease-in, transform 250ms ease-in;
 }
