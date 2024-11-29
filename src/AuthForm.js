@@ -11,7 +11,6 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
     email: '',
     password: '',
     password_confirmation: '',
-    role: 'customer',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -95,23 +94,6 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
                   </Form.Text>
                 )}
               </div>
-            )}
-
-            {!isLoginPage && (
-              <Form.Group className="auth-form-group" controlId="formRole">
-                <Form.Label>Select your Role: </Form.Label>
-                <Form.Control
-                  as="select"
-                  name="role"
-                  value={formData.role || 'customer'}
-                  onChange={handleInputChange}
-                  isInvalid={!!errors.role}
-                >
-                  <option value="customer">Customer</option>
-                  <option value="admin">Admin</option>
-                </Form.Control>
-                {errors.role && <div className="auth-error">{errors.role}</div>}
-              </Form.Group>
             )}
 
             <Button variant="primary" type="submit" className="auth-submit-btn">

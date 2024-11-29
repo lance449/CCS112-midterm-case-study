@@ -16,7 +16,7 @@ const SignUp = () => {
 
   const handleSignUp = async (formData) => {
     try {
-      await register(formData.name, formData.email, formData.password, formData.password_confirmation, formData.role);
+      await register(formData.name, formData.email, formData.password, formData.password_confirmation);
       navigate('/login');
     } catch (error) {
       if (error.errors) {
@@ -29,7 +29,7 @@ const SignUp = () => {
 
   return (
     <AuthForm
-      title="Sign Up"
+      title="Customer Sign Up"
       fields={fields}
       submitText="Sign Up"
       altLink="/login"
