@@ -149,10 +149,6 @@ const ProductCatalog = () => {
                   <FontAwesomeIcon icon={faUser} />
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => navigate('/dashboard')}>
-                    <FontAwesomeIcon icon={faChartLine} className="me-2" />
-                    Dashboard
-                  </Dropdown.Item>
                   <Dropdown.Item onClick={handleLogout}>
                     <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
                     Logout

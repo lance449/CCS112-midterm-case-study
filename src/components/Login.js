@@ -19,7 +19,11 @@ const Login = () => {
       localStorage.setItem('token', response.token);
       localStorage.setItem('userRole', response.user.role);
 
-      navigate(response.dashboard_redirect_url);
+      if (response.user.role === 'admin') {
+        navigate('/dashboard');
+      } else {
+        navigate('/products');
+      }
 
     } catch (error) {
       if (error.message) {
