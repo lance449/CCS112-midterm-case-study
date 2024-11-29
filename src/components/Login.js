@@ -17,8 +17,9 @@ const Login = () => {
     try {
       const response = await login(formData.email, formData.password);
       localStorage.setItem('token', response.token);
+      localStorage.setItem('userRole', response.user.role);
 
-      navigate(response.dashboard_redirect_url); // Redirect to the dashboard, link is on authcontroller.php on backend
+      navigate(response.dashboard_redirect_url);
 
     } catch (error) {
       if (error.message) {
@@ -38,7 +39,7 @@ const Login = () => {
       altText="Need an account? Sign up"
       onSubmit={handleLogin}
       errors={errors}
-      isLoginPage={true}  // Pass isLoginPage as true for login page
+      isLoginPage={true}
     />
   );
 };
