@@ -36,6 +36,7 @@ const Login = () => {
       altText="Need an account? Sign up"
       onSubmit={handleLogin}
       errors={errors}
+      isLoginPage={true}  // Pass isLoginPage as true for login page
     />
   );
 };
