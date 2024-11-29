@@ -5,26 +5,34 @@ body, html {
   overflow-x: hidden;
 }
 
+body {
+  overflow-y: scroll;
+  padding-right: 0 !important;
+}
+
 #root {
   height: 100%;
 }
 
 .auth-page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f8f9fa;
   padding: 0.5rem;
+  width: 100%;
+  perspective: 1000px;
+  overflow: hidden;
 }
 
 .auth-container {
+  position: relative;
   width: 100%;
   max-width: 380px;
   margin: 1rem auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  transform-style: preserve-3d;
 }
 
 .auth-form-container {
@@ -33,6 +41,31 @@ body, html {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: clamp(16px, 4vw, 24px);
   width: 100%;
+  transition: box-shadow 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-enter {
+  opacity: 0;
+  transform: translate3d(0, 30px, -50px);
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-exit {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transform: translate3d(0, -30px, -50px);
+  transition: opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
+              transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .auth-logo {
@@ -158,25 +191,6 @@ body, html {
   }
 }
 
-/* Animation styles */
-.fade-enter {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.fade-enter-active {
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity 250ms ease-in, transform 250ms ease-in;
-}
-
-.fade-exit {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.fade-exit-active {
-  opacity: 0;
-  transform: translateX(-20px);
-  transition: opacity 250ms ease-in, transform 250ms ease-in;
+.auth-form-container {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }

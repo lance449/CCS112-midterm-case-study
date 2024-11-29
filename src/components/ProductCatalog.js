@@ -24,7 +24,8 @@ import {
   faTrash,
   faArrowRight,
   faUser,
-  faSignOutAlt
+  faSignOutAlt,
+  faChartLine
 } from '@fortawesome/free-solid-svg-icons';
 import '../styles/ProductCatalog.css';
 import { useNavigate } from 'react-router-dom';
@@ -148,6 +149,10 @@ const ProductCatalog = () => {
                   <FontAwesomeIcon icon={faUser} />
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => navigate('/dashboard')}>
+                    <FontAwesomeIcon icon={faChartLine} className="me-2" />
+                    Dashboard
+                  </Dropdown.Item>
                   <Dropdown.Item onClick={handleLogout}>
                     <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
                     Logout

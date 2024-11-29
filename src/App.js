@@ -1,33 +1,34 @@
 // App.js
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
-import { CSSTransition, SwitchTransition } from 'react-transition-group';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
-import Dashboard from './components/Dashboard';
 import ProductCatalog from './components/ProductCatalog';
 import './components/AuthForm.css';
+import './components/PageTransitions.css';
 
-function AnimatedRoutes() {
+function AppContent() {
   const location = useLocation();
 
   return (
-    <div className="auth-wrapper">
-      <SwitchTransition>
+    <div className="transition-wrapper">
+      <TransitionGroup>
         <CSSTransition
-          key={location.pathname}
-          classNames="fade"
+          key={location.key}
           timeout={300}
+          classNames="page-transition"
+          unmountOnExit
         >
           <Routes location={location}>
-            <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/signup" element={<SignUp />} />
             <Route path="/products" element={<ProductCatalog />} />
+            <Route path="/signup" element={<SignUp />} />
           </Routes>
         </CSSTransition>
-      </SwitchTransition>
+      </TransitionGroup>
     </div>
   );
 }
@@ -35,7 +36,7 @@ function AnimatedRoutes() {
 function App() {
   return (
     <Router>
-      <AnimatedRoutes />
+      <AppContent />
     </Router>
   );
 }

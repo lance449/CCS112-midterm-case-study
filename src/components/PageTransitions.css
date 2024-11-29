@@ -1,0 +1,71 @@
+/* Force scrollbar to always be visible */
+html {
+  overflow-y: scroll;
+  margin-right: 0 !important;
+}
+
+/* Prevent content shift */
+body {
+  width: 100vw;
+  overflow-x: hidden;
+  padding-right: 0 !important; /* Prevents layout shift when modal opens */
+}
+
+/* Container for transitions */
+.transition-wrapper {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Common styles for all pages */
+.dashboard-container,
+.product-catalog {
+  position: absolute;
+  width: 100%;
+  min-height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f8f9fa;
+}
+
+/* Transition animations */
+.page-transition-enter {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: scale(1.02);
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+/* Ensure smooth transitions between different layouts */
+.dashboard-container,
+.product-catalog {
+  position: absolute;
+  width: 100%;
+  min-height: 100vh;
+  background: #f8f9fa;
+  backface-visibility: hidden;
+  transform-origin: center center;
+}
+
+/* Prevent layout shift during transitions */
+#root {
+  position: relative;
+  overflow-x: hidden;
+}
