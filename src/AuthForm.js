@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { Card, Form, Button, Alert, Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Eye, EyeSlash, BoxSeam } from 'react-bootstrap-icons';
-import zxcvbn from 'zxcvbn'; // Import zxcvbn
+import zxcvbn from 'zxcvbn';
 import './components/AuthForm.css';
 
 const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, errors = {}, isLoginPage }) => {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    role: 'customer',
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(null);
@@ -23,9 +29,8 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
       [name]: value
     }));
 
-    // If it's the password field, calculate strength
     if (name === 'password') {
-      setPasswordStrength(zxcvbn(value));  // Assuming you are using zxcvbn for password strength
+      setPasswordStrength(zxcvbn(value));
     }
   };
 
@@ -72,7 +77,7 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
               <Alert variant="danger" className="auth-alert">{errors.general}</Alert>
             )}
 
-            {/* Conditionally render the password strength checker only if it's not the login page */}
+            {/* Password strength */}
             {!isLoginPage && (
               <div className="password-strength">
                 <Form.Text className="password-strength-text">
@@ -81,7 +86,7 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
                 {formData.password ? (
                   passwordStrength && passwordStrength.score !== -1 && (
                     <Form.Text className={`password-strength-text strength-${Math.min(passwordStrength.score, 3)}`}>
-                    {[' Weak', ' Fair', ' Good', ' Strong'][Math.min(passwordStrength.score, 3)]}
+                      {[' Weak', ' Fair', ' Good', ' Strong'][Math.min(passwordStrength.score, 3)]}
                     </Form.Text>
                   )
                 ) : (
@@ -90,6 +95,23 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
                   </Form.Text>
                 )}
               </div>
+            )}
+
+            {!isLoginPage && (
+              <Form.Group className="auth-form-group" controlId="formRole">
+                <Form.Label>Select your Role: </Form.Label>
+                <Form.Control
+                  as="select"
+                  name="role"
+                  value={formData.role || 'customer'}
+                  onChange={handleInputChange}
+                  isInvalid={!!errors.role}
+                >
+                  <option value="customer">Customer</option>
+                  <option value="admin">Admin</option>
+                </Form.Control>
+                {errors.role && <div className="auth-error">{errors.role}</div>}
+              </Form.Group>
             )}
 
             <Button variant="primary" type="submit" className="auth-submit-btn">

@@ -17,7 +17,9 @@ const Login = () => {
     try {
       const response = await login(formData.email, formData.password);
       localStorage.setItem('token', response.token);
-      navigate('/dashboard');
+
+      navigate(response.dashboard_redirect_url); // Redirect to the dashboard, link is on authcontroller.php on backend
+
     } catch (error) {
       if (error.message) {
         setErrors({ general: error.message });

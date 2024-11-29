@@ -16,8 +16,8 @@ const SignUp = () => {
 
   const handleSignUp = async (formData) => {
     try {
-      await register(formData.name, formData.email, formData.password, formData.password_confirmation);
-      navigate('/login'); // Redirect to login page after successful registration
+      await register(formData.name, formData.email, formData.password, formData.password_confirmation, formData.role);
+      navigate('/login');
     } catch (error) {
       if (error.errors) {
         setErrors(error.errors);
