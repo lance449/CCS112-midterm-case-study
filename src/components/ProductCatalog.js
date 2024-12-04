@@ -27,7 +27,7 @@ import {
   faSignOutAlt,
   faChartLine
 } from '@fortawesome/free-solid-svg-icons';
-import '../styles/ProductCatalog.css';
+import './styles/ProductCatalog.css';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../api';
 import NavigationBar from './Navbar';

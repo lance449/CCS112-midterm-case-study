@@ -6,27 +6,14 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 axios.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 401) {
+    // Don't redirect on 401 during login attempts
+    if (error.response?.status === 401 && !error.config.url.includes('/login')) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
-
-// Add this error handler without modifying existing code
-const handleApiError = (error) => {
-  if (error.response?.status === 401) {
-    // Only clear token on auth errors
-    localStorage.removeItem('token');
-    window.location.href = '/login';
-    return;
-  }
-  
-  // Log other errors without disrupting flow
-  console.error('API Error:', error);
-  throw error;
-};
 
 export const register = async (name, email, password, password_confirmation) => {
   try {
@@ -53,10 +40,18 @@ export const login = async (email, password) => {
     });
     return response.data;
   } catch (error) {
-    if (error.response) {
-      throw error.response.data;
-    }
-    throw new Error('An unexpected error occurred during login');
+    // Create a consistent error structure
+    const errorMessage = 
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      'Invalid email or password';
+
+    // Throw a standardized error object
+    throw {
+      message: errorMessage,
+      status: error.response?.status || 500,
+      timestamp: new Date().getTime()
+    };
   }
 };
 

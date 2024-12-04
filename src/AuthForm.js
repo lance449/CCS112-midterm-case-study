@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { Eye, EyeSlash, BoxSeam } from 'react-bootstrap-icons';
+import { Eye, EyeSlash, BoxSeam, ExclamationTriangleFill } from 'react-bootstrap-icons';
 import zxcvbn from 'zxcvbn';
 import './components/AuthForm.css';
 
-const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, errors = {}, isLoginPage }) => {
+const AuthForm = ({ 
+  title, 
+  fields, 
+  submitText, 
+  altLink, 
+  altText, 
+  onSubmit, 
+  error,
+  setError,
+  isLoginPage 
+}) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,16 +25,12 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(null);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
     }));
 
@@ -33,12 +39,16 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
 
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -49,34 +59,47 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
             <BoxSeam size={48} />
           </div>
           <h2 className="auth-title">{title}</h2>
-          <Form onSubmit={handleSubmit}>
+          
+          {error && (
+            <div className="auth-alert">
+              <ExclamationTriangleFill className="alert-icon" />
+              <span className="alert-message">{error}</span>
+              <button className="close-btn" onClick={() => setError(null)}>&times;</button>
+            </div>
+          )}
+
+          <Form noValidate onSubmit={handleSubmit}>
             {fields.map((field, index) => (
-              <Form.Group className="auth-form-group" controlId={`form${field.name}`} key={index}>
+              <Form.Group className="auth-form-group" key={index}>
                 <Form.Label>{field.label}</Form.Label>
                 <div className="auth-input-wrapper">
                   <Form.Control
-                    type={field.name.includes('password') ? (field.name === 'password' ? (showPassword ? 'text' : 'password') : (showConfirmPassword ? 'text' : 'password')) : field.type}
+                    type={field.name.includes('password') ? 
+                      (field.name === 'password' ? (showPassword ? 'text' : 'password') : 
+                      (showConfirmPassword ? 'text' : 'password')) : 
+                      field.type}
                     name={field.name}
                     placeholder={field.placeholder}
                     value={formData[field.name] || ''}
                     onChange={handleInputChange}
-                    isInvalid={!!errors[field.name]}
+                    isInvalid={!!error}
                   />
                   {field.name.includes('password') && (
-                    <div className="password-toggle" onClick={field.name === 'password' ? togglePasswordVisibility : toggleConfirmPasswordVisibility}>
-                      {(field.name === 'password' ? showPassword : showConfirmPassword) ? <Eye /> : <EyeSlash />}
+                    <div 
+                      className="password-toggle"
+                      onClick={() => field.name === 'password' ? 
+                        setShowPassword(!showPassword) : 
+                        setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {(field.name === 'password' ? showPassword : showConfirmPassword) ? 
+                        <Eye /> : <EyeSlash />}
                     </div>
                   )}
                 </div>
-                {errors[field.name] && <div className="auth-error">{errors[field.name]}</div>}
               </Form.Group>
             ))}
 
-            {errors.general && (
-              <Alert variant="danger" className="auth-alert">{errors.general}</Alert>
-            )}
-
-            {/* Password strength */}
+            {/* Password strength indicator */}
             {!isLoginPage && (
               <div className="password-strength">
                 <Form.Text className="password-strength-text">
@@ -96,10 +119,16 @@ const AuthForm = ({ title, fields, submitText, altLink, altText, onSubmit, error
               </div>
             )}
 
-            <Button variant="primary" type="submit" className="auth-submit-btn">
-              {submitText}
+            <Button 
+              variant="primary" 
+              type="submit" 
+              className="auth-submit-btn"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Please wait...' : submitText}
             </Button>
           </Form>
+          
           <div className="auth-alt-link">
             <Link to={altLink}>{altText}</Link>
           </div>

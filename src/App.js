@@ -18,14 +18,14 @@ function AppContent() {
   const location = useLocation();
 
   return (
-    <div className="transition-wrapper">
-      <TransitionGroup>
-        <CSSTransition
-          key={location.key}
-          timeout={300}
-          classNames="page-transition"
-          unmountOnExit
-        >
+    <TransitionGroup component={null}>
+      <CSSTransition
+        key={location.key}
+        timeout={300}
+        classNames="page-transition"
+        unmountOnExit
+      >
+        <div className="transition-wrapper">
           <Routes location={location}>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
@@ -71,9 +71,9 @@ function AppContent() {
             />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
-        </CSSTransition>
-      </TransitionGroup>
-    </div>
+        </div>
+      </CSSTransition>
+    </TransitionGroup>
   );
 }
 

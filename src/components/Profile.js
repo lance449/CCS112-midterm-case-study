@@ -3,7 +3,7 @@ import { Container, Card, Form, Button, Alert, Row, Col, Image } from 'react-boo
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEdit, faSave, faTimes, faEye, faEyeSlash, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import userService from '../services/userService';
+import userService from './services/userService';
 import './Profile.css';
 
 const Profile = () => {
