@@ -35,6 +35,8 @@ import NavigationBar from './Navbar';
 // Create a CartContext
 export const CartContext = React.createContext();
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const ProductCatalog = () => {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,16 +66,14 @@ const ProductCatalog = () => {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/cart', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/api/cart`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
         });
-        const cartItems = response.data.map(item => ({
-          id: item.product.id,
-          description: item.product.description,
-          price: item.product.price,
-          quantity: item.quantity
-        }));
-        setCart(cartItems);
+        setCart(response.data);
       } catch (error) {
         console.error('Error fetching cart:', error);
       }
@@ -110,14 +110,18 @@ const ProductCatalog = () => {
 
   const addToCart = async (product) => {
     try {
+      const token = localStorage.getItem('token');
       const existingItem = cart.find(item => item.id === product.id);
       const quantity = existingItem ? existingItem.quantity + 1 : 1;
 
-      await axios.post('http://localhost:8000/api/cart', {
+      await axios.post(`${API_URL}/api/cart`, {
         product_id: product.id,
         quantity: quantity
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json'
+        }
       });
 
       if (existingItem) {
