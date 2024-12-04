@@ -32,6 +32,8 @@ import { useNavigate } from 'react-router-dom';
 import { logout } from '../api';
 import NavigationBar from './Navbar';
 import { toast } from 'react-hot-toast';
+import './Cart.css';
+import { debounce } from 'lodash';
 
 // Create a CartContext
 export const CartContext = React.createContext();
@@ -240,25 +242,33 @@ const ProductCatalog = () => {
     const quantity = parseInt(item.quantity || 0);
     const total = price * quantity;
 
+    const handleQuantityChange = (newQuantity) => {
+      if (newQuantity >= 0) {  // Prevent negative quantities
+        onUpdateQuantity(item, newQuantity);
+      }
+    };
+
     return (
       <div className="cart-item">
         <div className="item-details">
           <span>{item.product?.description || item.description}</span>
           <div className="quantity-controls">
             <button 
-              onClick={() => onUpdateQuantity(item, Math.max(0, quantity - 1))}
+              onClick={() => handleQuantityChange(quantity - 1)}
               disabled={quantity <= 1}
+              className="quantity-btn"
             >
               -
             </button>
-            <span>{quantity}</span>
+            <span className="quantity-display">{quantity}</span>
             <button 
-              onClick={() => onUpdateQuantity(item, quantity + 1)}
+              onClick={() => handleQuantityChange(quantity + 1)}
+              className="quantity-btn"
             >
               +
             </button>
           </div>
-          <span>${formatPrice(total)}</span>
+          <span className="item-total">${formatPrice(total)}</span>
           <button className="remove-btn" onClick={() => onRemove(item)}>
             <FontAwesomeIcon icon={faTrash} />
           </button>
@@ -279,7 +289,7 @@ const ProductCatalog = () => {
           <CartItem
             key={item.id}
             item={item}
-            onUpdateQuantity={updateCartItemQuantity}
+            onUpdateQuantity={updateCartItemQuantityOptimistic}
             onRemove={removeFromCart}
           />
         ))}
@@ -297,39 +307,76 @@ const ProductCatalog = () => {
     );
   };
 
-  const updateCartItemQuantity = async (item, newQuantity) => {
+  // Add fetchCartItems function definition before it's used
+  const fetchCartItems = async () => {
     try {
       const token = localStorage.getItem('token');
-      
-      if (newQuantity === 0) {
-        // If quantity is 0, remove the item
+      const response = await axios.get(`${API_URL}/api/cart`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      // Ensure cart items have the correct structure
+      const formattedCart = response.data.map(item => ({
+        id: item.id,
+        product: item.product,
+        quantity: parseInt(item.quantity || 1),
+        price: parseFloat(item.product?.price || 0)
+      }));
+      setCart(formattedCart);
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+    }
+  };
+
+  // Update the debouncedUpdateCart function
+  const debouncedUpdateCart = debounce(async (item, quantity, token) => {
+    try {
+      if (quantity === 0) {
         await axios.delete(`${API_URL}/api/cart/${item.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
           }
         });
-        setCart(cart.filter(cartItem => cartItem.id !== item.id));
       } else {
-        // Update quantity
         await axios.post(`${API_URL}/api/cart`, {
-          product_id: item.product?.id || item.id,
-          quantity: newQuantity
+          product_id: item.product?.id || item.product_id,
+          quantity: quantity
         }, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
           }
         });
+      }
+    } catch (error) {
+      throw error;
+    }
+  }, 500);
 
-        setCart(cart.map(cartItem => 
+  // Update the updateCartItemQuantityOptimistic function
+  const updateCartItemQuantityOptimistic = async (item, newQuantity) => {
+    try {
+      // Optimistically update the UI first
+      setCart(prevCart => 
+        prevCart.map(cartItem => 
           cartItem.id === item.id 
             ? { ...cartItem, quantity: newQuantity }
             : cartItem
-        ));
-      }
+        )
+      );
+
+      const token = localStorage.getItem('token');
+      
+      // Call the debounced update with the full item object
+      await debouncedUpdateCart(item, newQuantity, token);
     } catch (error) {
       console.error('Error updating cart item quantity:', error);
+      // Revert the optimistic update on error
+      toast.error('Failed to update quantity');
+      fetchCartItems(); // Refresh cart to get correct state
     }
   };
 
