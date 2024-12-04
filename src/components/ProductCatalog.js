@@ -30,6 +30,10 @@ import {
 import '../styles/ProductCatalog.css';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../api';
+import NavigationBar from './Navbar';
+
+// Create a CartContext
+export const CartContext = React.createContext();
 
 const ProductCatalog = () => {
   const [products, setProducts] = useState([]);
@@ -98,9 +102,11 @@ const ProductCatalog = () => {
     }
   };
 
-  const filteredProducts = selectedCategory
-    ? products.filter(product => product.category === selectedCategory)
-    : products;
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const addToCart = async (product) => {
     try {
@@ -172,75 +178,42 @@ const ProductCatalog = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      localStorage.removeItem('token');
       navigate('/login');
     } catch (error) {
       console.error('Error during logout:', error);
+      navigate('/login');
     }
   };
 
   return (
     <div className="product-catalog">
-      <nav className="catalog-nav">
-        <Container>
-          <div className="nav-content">
-            <h1>Product Catalog</h1>
-            <div className="nav-actions">
-              <div className="cart-icon" onClick={() => setShowCart(true)}>
-                <FontAwesomeIcon icon={faShoppingCart} />
-                {cart.length > 0 && (
-                  <Badge pill bg="danger">{cart.length}</Badge>
-                )}
-              </div>
-              <Dropdown align="end">
-                <Dropdown.Toggle variant="link" className="user-dropdown">
-                  <FontAwesomeIcon icon={faUser} />
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item onClick={handleLogout}>
-                    <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
-                    Logout
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            </div>
+      <NavigationBar 
+        cartItemCount={cart.length} 
+        onCartClick={() => setShowCart(true)} 
+        onLogout={handleLogout}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
+      
+      <Container className="mt-5 pt-4">
+        <div className="search-filter-container">
+          <div className="filter-row">
+            <Form.Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="category-select"
+            >
+              <option value="">All Categories</option>
+              {categories.map((category, index) => (
+                <option key={index} value={category}>{category}</option>
+              ))}
+            </Form.Select>
           </div>
-        </Container>
-      </nav>
-
-      <Container className="main-content">
-        <div className="search-section">
-          <Row>
-            <Col md={8}>
-              <InputGroup>
-                <Form.Control
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Button variant="primary" onClick={handleSearch}>
-                  <FontAwesomeIcon icon={faSearch} className="me-2" />
-                  Search
-                </Button>
-              </InputGroup>
-            </Col>
-            <Col md={4}>
-              <Form.Select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                <option value="">All Categories</option>
-                {categories.map((category, index) => (
-                  <option key={index} value={category}>{category}</option>
-                ))}
-              </Form.Select>
-            </Col>
-          </Row>
         </div>
 
-        <Row xs={1} md={2} lg={3} className="g-4">
-          {filteredProducts.map((product) => (
-            <Col key={product.id}>
+        <Row className="products-grid">
+          {filteredProducts.map(product => (
+            <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
               <Card className="product-card">
                 <Card.Body>
                   <Card.Title className="mb-3">{product.description}</Card.Title>

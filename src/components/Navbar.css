@@ -1,0 +1,123 @@
+.main-navbar {
+  background: linear-gradient(to right, #ffffff, #f8f9fa);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+}
+
+.brand-text {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #2d3748, #4a5568);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-categories {
+  display: flex;
+  gap: 2rem;
+  margin-left: 3rem;
+}
+
+.nav-categories .nav-link {
+  position: relative;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.nav-categories .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--accent-color);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.nav-categories .nav-link:hover::after,
+.nav-categories .nav-link.active::after {
+  width: 80%;
+}
+
+.nav-categories .nav-link {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.nav-categories .nav-link.active {
+  color: var(--accent-color);
+}
+
+.nav-categories .nav-link:hover {
+  background-color: #f7fafc;
+}
+
+.search-bar {
+  max-width: 400px;
+  margin: 0 2rem;
+}
+
+.search-bar .form-control {
+  border: 1px solid #e2e8f0;
+  border-radius: var(--border-radius-md) 0 0 var(--border-radius-md);
+  padding: 0.75rem 1rem;
+}
+
+.search-bar .input-group-text {
+  border: 1px solid #e2e8f0;
+  border-left: none;
+  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+  background: white;
+  cursor: pointer;
+}
+
+.search-bar .input-group-text:hover {
+  background: #f8f9fa;
+}
+
+.nav-icons {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.nav-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-primary) !important;
+}
+
+.icon-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--accent-color);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 991px) {
+  .nav-categories, .search-bar {
+    display: none;
+  }
+  .search-bar {
+    max-width: 100%;
+    margin: 1rem 0;
+  }
+}

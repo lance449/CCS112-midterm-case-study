@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 export const register = async (name, email, password, password_confirmation) => {
   try {
@@ -37,13 +37,39 @@ export const login = async (email, password) => {
 export const logout = async () => {
   try {
     const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
     await axios.post(`${API_URL}/logout`, {}, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
       }
     });
+
+    // Clear local storage regardless of API response
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
+    
   } catch (error) {
     console.error('Error during logout:', error);
+    // Still clear local storage even if API call fails
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
     throw error;
   }
 };
+
+class ApiService {
+  static async getProducts() {
+    try {
+      const response = await axios.get(`${API_URL}/products`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+}
