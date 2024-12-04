@@ -57,6 +57,29 @@ const ProductCatalog = () => {
     setCategories(uniqueCategories);
   }, [products]);
 
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/cart', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        const cartItems = response.data.map(item => ({
+          id: item.product.id,
+          description: item.product.description,
+          price: item.product.price,
+          quantity: item.quantity
+        }));
+        setCart(cartItems);
+      } catch (error) {
+        console.error('Error fetching cart:', error);
+      }
+    };
+
+    if (localStorage.getItem('token')) {
+      fetchCartItems();
+    }
+  }, []);
+
   const fetchProducts = async () => {
     try {
       const response = await axios.get('http://127.0.0.1:8000/api/products');
@@ -79,18 +102,30 @@ const ProductCatalog = () => {
     ? products.filter(product => product.category === selectedCategory)
     : products;
 
-  const addToCart = (product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
+  const addToCart = async (product) => {
+    try {
+      const existingItem = cart.find(item => item.id === product.id);
+      const quantity = existingItem ? existingItem.quantity + 1 : 1;
+
+      await axios.post('http://localhost:8000/api/cart', {
+        product_id: product.id,
+        quantity: quantity
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+
       if (existingItem) {
-        return prevCart.map(item =>
+        setCart(cart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
-        );
+        ));
+      } else {
+        setCart([...cart, { ...product, quantity: 1 }]);
       }
-      return [...prevCart, { ...product, quantity: 1 }];
-    });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    }
   };
 
   const updateCartQuantity = (productId, change) => {
@@ -105,20 +140,33 @@ const ProductCatalog = () => {
     );
   };
 
-  const removeFromCart = (productId) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+  const removeFromCart = async (productId) => {
+    try {
+      await axios.delete(`http://localhost:8000/api/cart/${productId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setCart(prevCart => prevCart.filter(item => item.id !== productId));
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+    }
   };
 
   const calculateTotal = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const handleCheckout = () => {
-    // Here you would typically send the order to your backend
-    alert('Order placed successfully!');
-    setCart([]);
-    setShowCheckout(false);
-    setShowCart(false);
+  const handleCheckout = async () => {
+    try {
+      await axios.delete('http://localhost:8000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setCart([]);
+      setShowCheckout(false);
+      setShowCart(false);
+      alert('Order placed successfully!');
+    } catch (error) {
+      console.error('Error during checkout:', error);
+    }
   };
 
   const handleLogout = async () => {
