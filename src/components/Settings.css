@@ -1,0 +1,104 @@
+.settings-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+}
+
+.settings-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s ease;
+}
+
+.settings-card:hover {
+  transform: translateY(-2px);
+}
+
+.settings-card .card-header {
+  background: linear-gradient(135deg, #2c5282, #2b6cb0);
+  color: white;
+  border-radius: 1rem 1rem 0 0;
+  padding: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: none;
+}
+
+.settings-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+
+.settings-select {
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.settings-select:focus {
+  border-color: #2b6cb0;
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+  background-color: #ffffff;
+}
+
+.form-check-input {
+  width: 2.5rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.form-check-input:checked {
+  background-color: #38a169;
+  border-color: #38a169;
+}
+
+.form-check-label {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.settings-save-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  background-color: #38a169;
+  border-color: #38a169;
+}
+
+.settings-save-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(56, 161, 105, 0.2);
+  background-color: #2f855a;
+  border-color: #2f855a;
+}
+
+.alert {
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  border: none;
+}
+
+.alert-success {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+} 

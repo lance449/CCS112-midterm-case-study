@@ -20,7 +20,6 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
-    // Add your category filtering logic here
   };
 
   const handleAccountClick = (option) => {
@@ -40,91 +39,90 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
   };
 
   return (
-    <Navbar bg="white" expand="lg" className="shadow-sm fixed-top main-navbar">
-      <Container fluid>
+    <Navbar expand="lg" className="main-navbar">
+      <Container fluid className="nav-container">
         <Navbar.Brand href="#" className="brand-text">
-          <span className="text-success">Shop</span>cart
+          <span className="shop-text">Shop</span>
+          <span className="cart-text">cart</span>
         </Navbar.Brand>
         
-        <div className="nav-categories d-none d-lg-flex">
+        <Nav className="nav-categories">
           <Nav.Link 
-            href="#" 
-            active={selectedCategory === 'all'}
+            className={`nav-link ${selectedCategory === 'all' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('all')}
           >
             All Products
           </Nav.Link>
           <Nav.Link 
-            href="#" 
-            active={selectedCategory === 'deals'}
+            className={`nav-link ${selectedCategory === 'deals' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('deals')}
           >
             Deals
           </Nav.Link>
           <Nav.Link 
-            href="#" 
-            active={selectedCategory === 'new'}
+            className={`nav-link ${selectedCategory === 'new' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('new')}
           >
             What's New
           </Nav.Link>
           <Nav.Link 
-            href="#" 
-            active={selectedCategory === 'delivery'}
+            className={`nav-link ${selectedCategory === 'delivery' ? 'active' : ''}`}
             onClick={() => handleCategoryClick('delivery')}
           >
             Delivery
           </Nav.Link>
-        </div>
-
-        <InputGroup className="search-bar">
-          <Form.Control
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-          <InputGroup.Text>
-            <FontAwesomeIcon icon={faSearch} />
-          </InputGroup.Text>
-        </InputGroup>
-
-        <Nav className="nav-icons">
-          <Dropdown align="end">
-            <Dropdown.Toggle as={Nav.Link} className="nav-icon">
-              <FontAwesomeIcon icon={faUser} />
-              <span className="icon-label">Account</span>
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu className="account-dropdown">
-              <Dropdown.Header>Hello, {userName}!</Dropdown.Header>
-              <Dropdown.Item onClick={() => handleAccountClick('profile')}>
-                <FontAwesomeIcon icon={faUserCircle} className="me-2" />
-                My Profile
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => handleAccountClick('orders')}>
-                <FontAwesomeIcon icon={faHistory} className="me-2" />
-                Order History
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => handleAccountClick('settings')}>
-                <FontAwesomeIcon icon={faCog} className="me-2" />
-                Settings
-              </Dropdown.Item>
-              <Dropdown.Divider />
-              <Dropdown.Item onClick={onLogout}>
-                <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
-                Logout
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-
-          <Nav.Link onClick={onCartClick} className="nav-icon">
-            <FontAwesomeIcon icon={faShoppingCart} />
-            {cartItemCount > 0 && (
-              <span className="cart-badge">{cartItemCount}</span>
-            )}
-            <span className="icon-label">Cart</span>
-          </Nav.Link>
         </Nav>
+
+        <div className="nav-right">
+          <InputGroup className="search-bar">
+            <Form.Control
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+            <InputGroup.Text>
+              <FontAwesomeIcon icon={faSearch} />
+            </InputGroup.Text>
+          </InputGroup>
+
+          <Nav className="nav-icons">
+            <Dropdown align="end">
+              <Dropdown.Toggle as={Nav.Link} className="nav-icon">
+                <FontAwesomeIcon icon={faUser} />
+                <span className="icon-label">Account</span>
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="account-dropdown">
+                <Dropdown.Header>Hello, {userName}!</Dropdown.Header>
+                <Dropdown.Item onClick={() => handleAccountClick('profile')}>
+                  <FontAwesomeIcon icon={faUserCircle} className="me-2" />
+                  My Profile
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleAccountClick('orders')}>
+                  <FontAwesomeIcon icon={faHistory} className="me-2" />
+                  Order History
+                </Dropdown.Item>
+                <Dropdown.Item onClick={() => handleAccountClick('settings')}>
+                  <FontAwesomeIcon icon={faCog} className="me-2" />
+                  Settings
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item onClick={onLogout}>
+                  <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
+                  Logout
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+
+            <Nav.Link onClick={onCartClick} className="nav-icon cart-icon">
+              <FontAwesomeIcon icon={faShoppingCart} />
+              {cartItemCount > 0 && (
+                <span className="cart-badge">{cartItemCount}</span>
+              )}
+              <span className="icon-label">Cart</span>
+            </Nav.Link>
+          </Nav>
+        </div>
       </Container>
     </Navbar>
   );

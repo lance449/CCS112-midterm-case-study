@@ -9,6 +9,9 @@ import ProductCatalog from './components/ProductCatalog';
 import ProtectedRoute from './components/ProtectedRoute';
 import './components/AuthForm.css';
 import './components/PageTransitions.css';
+import Profile from './components/Profile';
+import Orders from './components/Orders';
+import Settings from './components/Settings';
 
 function AppContent() {
   const location = useLocation();
@@ -38,6 +41,30 @@ function AppContent() {
               element={
                 <ProtectedRoute allowedRoles={['customer']}>
                   <ProductCatalog />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute allowedRoles={['customer', 'admin']}>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/orders" 
+              element={
+                <ProtectedRoute allowedRoles={['customer']}>
+                  <Orders />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute allowedRoles={['customer', 'admin']}>
+                  <Settings />
                 </ProtectedRoute>
               } 
             />

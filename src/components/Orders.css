@@ -1,0 +1,25 @@
+.orders-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+}
+
+.orders-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.orders-card .card-header {
+  background: linear-gradient(45deg, var(--accent-color), #48bb78);
+  color: white;
+  border-radius: 1rem 1rem 0 0;
+  padding: 1.5rem;
+}
+
+.orders-card .card-body {
+  padding: 2rem;
+}
+
+.table {
+  margin-bottom: 0;
+} 
