@@ -31,6 +31,7 @@ import '../styles/ProductCatalog.css';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../api';
 import NavigationBar from './Navbar';
+import { toast } from 'react-hot-toast';
 
 // Create a CartContext
 export const CartContext = React.createContext();
@@ -52,6 +53,13 @@ const ProductCatalog = () => {
     paymentMethod: 'cod'
   });
   const navigate = useNavigate();
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    address: '',
+    paymentMode: '',
+    contactNumber: ''
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -73,7 +81,13 @@ const ProductCatalog = () => {
             'Accept': 'application/json'
           }
         });
-        setCart(response.data);
+        const formattedCart = response.data.map(item => ({
+          id: item.id,
+          product: item.product,
+          quantity: parseInt(item.quantity || 1),
+          price: parseFloat(item.product?.price || 0)
+        }));
+        setCart(formattedCart);
       } catch (error) {
         console.error('Error fetching cart:', error);
       }
@@ -162,20 +176,46 @@ const ProductCatalog = () => {
   };
 
   const calculateTotal = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cart.reduce((total, item) => {
+      const price = parseFloat(item.product?.price || item.price || 0);
+      const quantity = parseInt(item.quantity || 0);
+      return total + (price * quantity);
+    }, 0);
   };
 
   const handleCheckout = async () => {
     try {
-      await axios.delete('http://localhost:8000/api/cart', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${API_URL}/api/checkout`,
+        {},  // Empty body since we're using cart data from the backend
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        }
+      );
+
+      // Clear local cart state
       setCart([]);
-      setShowCheckout(false);
+      
+      // Show success message
+      toast.success('Order placed successfully!');
+      
+      // Close the cart modal
       setShowCart(false);
-      alert('Order placed successfully!');
+
+      // Refresh product list to show updated quantities
+      fetchProducts();
+
     } catch (error) {
-      console.error('Error during checkout:', error);
+      console.error('Checkout error:', error);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Error processing checkout');
+      }
     }
   };
 
@@ -187,6 +227,137 @@ const ProductCatalog = () => {
       console.error('Error during logout:', error);
       navigate('/login');
     }
+  };
+
+  // Add this helper function to safely handle number calculations
+  const formatPrice = (price) => {
+    return Number(price).toFixed(2);
+  };
+
+  // Update the cart display section
+  const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
+    const price = parseFloat(item.product?.price || item.price || 0);
+    const quantity = parseInt(item.quantity || 0);
+    const total = price * quantity;
+
+    return (
+      <div className="cart-item">
+        <div className="item-details">
+          <span>{item.product?.description || item.description}</span>
+          <div className="quantity-controls">
+            <button 
+              onClick={() => onUpdateQuantity(item, Math.max(0, quantity - 1))}
+              disabled={quantity <= 1}
+            >
+              -
+            </button>
+            <span>{quantity}</span>
+            <button 
+              onClick={() => onUpdateQuantity(item, quantity + 1)}
+            >
+              +
+            </button>
+          </div>
+          <span>${formatPrice(total)}</span>
+          <button className="remove-btn" onClick={() => onRemove(item)}>
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Update the shopping cart modal content
+  const renderCartContent = () => {
+    if (cart.length === 0) {
+      return <p>Your cart is empty</p>;
+    }
+
+    return (
+      <>
+        {cart.map(item => (
+          <CartItem
+            key={item.id}
+            item={item}
+            onUpdateQuantity={updateCartItemQuantity}
+            onRemove={removeFromCart}
+          />
+        ))}
+        <div className="cart-total">
+          <strong>Total: ${formatPrice(calculateTotal())}</strong>
+        </div>
+        <Button 
+          variant="success" 
+          onClick={() => setShowCheckoutModal(true)}
+          className="checkout-btn"
+        >
+          Proceed to Checkout
+        </Button>
+      </>
+    );
+  };
+
+  const updateCartItemQuantity = async (item, newQuantity) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (newQuantity === 0) {
+        // If quantity is 0, remove the item
+        await axios.delete(`${API_URL}/api/cart/${item.id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        setCart(cart.filter(cartItem => cartItem.id !== item.id));
+      } else {
+        // Update quantity
+        await axios.post(`${API_URL}/api/cart`, {
+          product_id: item.product?.id || item.id,
+          quantity: newQuantity
+        }, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        setCart(cart.map(cartItem => 
+          cartItem.id === item.id 
+            ? { ...cartItem, quantity: newQuantity }
+            : cartItem
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating cart item quantity:', error);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCustomerInfo({ ...customerInfo, [name]: value });
+  };
+
+  const handleModalCheckout = async () => {
+    // Validate customer info
+    if (!customerInfo.name || !customerInfo.address || !customerInfo.paymentMode || !customerInfo.contactNumber) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    // Proceed with checkout logic
+    await handleCheckout();
+
+    // Close modal and clear form
+    setShowCheckoutModal(false);
+    setCustomerInfo({
+      name: '',
+      address: '',
+      paymentMode: '',
+      contactNumber: ''
+    });
+
+    toast.success('Order placed successfully!');
   };
 
   return (
@@ -252,40 +423,7 @@ const ProductCatalog = () => {
           <Offcanvas.Title>Shopping Cart</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
-          {cart.length === 0 ? (
-            <p>Your cart is empty</p>
-          ) : (
-            <>
-              <ListGroup className="cart-items">
-                {cart.map(item => (
-                  <ListGroup.Item key={item.id} className="cart-item">
-                    <div className="item-details">
-                      <h6>{item.description}</h6>
-                      <div className="price">${(item.price * item.quantity).toFixed(2)}</div>
-                    </div>
-                    <div className="quantity-controls">
-                      <Button variant="light" size="sm" onClick={() => updateCartQuantity(item.id, -1)}>
-                        <FontAwesomeIcon icon={faMinus} />
-                      </Button>
-                      <span className="quantity">{item.quantity}</span>
-                      <Button variant="light" size="sm" onClick={() => updateCartQuantity(item.id, 1)}>
-                        <FontAwesomeIcon icon={faPlus} />
-                      </Button>
-                      <Button variant="danger" size="sm" onClick={() => removeFromCart(item.id)}>
-                        <FontAwesomeIcon icon={faTrash} />
-                      </Button>
-                    </div>
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
-              <div className="cart-total">
-                <h5>Total: ${calculateTotal().toFixed(2)}</h5>
-                <Button variant="success" onClick={() => setShowCheckout(true)}>
-                  Proceed to Checkout
-                </Button>
-              </div>
-            </>
-          )}
+          {renderCartContent()}
         </Offcanvas.Body>
       </Offcanvas>
 
@@ -345,6 +483,71 @@ const ProductCatalog = () => {
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowCheckout(false)}>Cancel</Button>
           <Button variant="primary" onClick={handleCheckout}>Place Order</Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showCheckoutModal} onHide={() => setShowCheckoutModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Checkout Information</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group controlId="formName">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter your name"
+                name="name"
+                value={customerInfo.name}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formAddress">
+              <Form.Label>Address</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter your address"
+                name="address"
+                value={customerInfo.address}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formPaymentMode">
+              <Form.Label>Mode of Payment</Form.Label>
+              <Form.Control
+                as="select"
+                name="paymentMode"
+                value={customerInfo.paymentMode}
+                onChange={handleInputChange}
+              >
+                <option value="">Select payment mode</option>
+                <option value="credit_card">Credit Card</option>
+                <option value="paypal">PayPal</option>
+                <option value="cash_on_delivery">Cash on Delivery</option>
+              </Form.Control>
+            </Form.Group>
+
+            <Form.Group controlId="formContactNumber">
+              <Form.Label>Contact Number</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter your contact number"
+                name="contactNumber"
+                value={customerInfo.contactNumber}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCheckoutModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleModalCheckout}>
+            Confirm Order
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

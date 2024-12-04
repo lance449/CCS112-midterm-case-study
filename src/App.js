@@ -12,6 +12,7 @@ import './components/PageTransitions.css';
 import Profile from './components/Profile';
 import Orders from './components/Orders';
 import Settings from './components/Settings';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function AppContent() {
   const location = useLocation();
