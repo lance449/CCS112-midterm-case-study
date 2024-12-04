@@ -2,6 +2,32 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
+// Add interceptor for token handling
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Add this error handler without modifying existing code
+const handleApiError = (error) => {
+  if (error.response?.status === 401) {
+    // Only clear token on auth errors
+    localStorage.removeItem('token');
+    window.location.href = '/login';
+    return;
+  }
+  
+  // Log other errors without disrupting flow
+  console.error('API Error:', error);
+  throw error;
+};
+
 export const register = async (name, email, password, password_confirmation) => {
   try {
     const response = await axios.post(`${API_URL}/register`, {

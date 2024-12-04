@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Table, Container, Badge, Card } from 'react-bootstrap';
+import { Table, Container, Badge } from 'react-bootstrap';
 import { toast } from 'react-hot-toast';
-import './Orders.css';
+import './OrderHistory.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-const Orders = () => {
+const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -25,10 +24,8 @@ const Orders = () => {
         }
       });
       setOrders(response.data);
-      setError(null);
     } catch (error) {
       console.error('Error fetching orders:', error);
-      setError('Failed to load order history');
       toast.error('Failed to load order history');
     } finally {
       setLoading(false);
@@ -59,16 +56,6 @@ const Orders = () => {
     return <div className="text-center mt-5">Loading orders...</div>;
   }
 
-  if (error) {
-    return (
-      <Card className="text-center mt-5">
-        <Card.Body>
-          <Card.Text className="text-danger">{error}</Card.Text>
-        </Card.Body>
-      </Card>
-    );
-  }
-
   return (
     <Container className="order-history-container">
       <h2 className="text-center mb-4">Order History</h2>
@@ -80,8 +67,10 @@ const Orders = () => {
             <tr>
               <th>Order ID</th>
               <th>Date</th>
+              <th>Items</th>
               <th>Total</th>
               <th>Status</th>
+              <th>Shipping Address</th>
             </tr>
           </thead>
           <tbody>
@@ -89,8 +78,18 @@ const Orders = () => {
               <tr key={order.id}>
                 <td>#{order.id}</td>
                 <td>{formatDate(order.created_at)}</td>
-                <td>${parseFloat(order.total).toFixed(2)}</td>
+                <td>
+                  <ul className="order-items-list">
+                    {order.items.map((item, index) => (
+                      <li key={index}>
+                        {item.product.description} x {item.quantity}
+                      </li>
+                    ))}
+                  </ul>
+                </td>
+                <td>${order.total.toFixed(2)}</td>
                 <td>{getStatusBadge(order.status)}</td>
+                <td>{order.shipping_address}</td>
               </tr>
             ))}
           </tbody>
@@ -100,4 +99,4 @@ const Orders = () => {
   );
 };
 
-export default Orders; 
+export default OrderHistory; 

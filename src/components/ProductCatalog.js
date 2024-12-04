@@ -38,7 +38,83 @@ import { debounce } from 'lodash';
 // Create a CartContext
 export const CartContext = React.createContext();
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
+const MemoizedCartDisplay = React.memo(({ 
+  showCart, 
+  setShowCart, 
+  cart, 
+  handleQuantityChange, 
+  isUpdatingCart,
+  setShowCheckoutModal,
+  calculateTotal 
+}) => (
+  <Offcanvas 
+    show={showCart} 
+    onHide={() => setShowCart(false)} 
+    placement="end"
+    backdrop="static"
+    keyboard={false}
+  >
+    <Offcanvas.Header closeButton>
+      <Offcanvas.Title>Shopping Cart</Offcanvas.Title>
+    </Offcanvas.Header>
+    <Offcanvas.Body>
+      <ListGroup>
+        {cart.length === 0 ? (
+          <ListGroup.Item>Your cart is empty</ListGroup.Item>
+        ) : (
+          cart.map((item) => (
+            <ListGroup.Item key={item.id} className="cart-item">
+              <div className="item-details">
+                <div>
+                  <h6>{item.product.description}</h6>
+                  <p className="mb-0">Price: ${parseFloat(item.product.price).toFixed(2)}</p>
+                </div>
+                <div className="quantity-controls">
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={() => handleQuantityChange(item, -1)}
+                    disabled={item.quantity <= 1 || isUpdatingCart}
+                  >
+                    <FontAwesomeIcon icon={faMinus} />
+                  </Button>
+                  <span className="quantity-display">{item.quantity}</span>
+                  <Button
+                    variant="outline-secondary"
+                    size="sm"
+                    onClick={() => handleQuantityChange(item, 1)}
+                    disabled={isUpdatingCart}
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                  </Button>
+                </div>
+                <div className="item-total">
+                  ${(item.quantity * parseFloat(item.product.price)).toFixed(2)}
+                </div>
+              </div>
+            </ListGroup.Item>
+          ))
+        )}
+      </ListGroup>
+      {cart.length > 0 && (
+        <div className="cart-footer">
+          <div className="cart-total">
+            Total: ${calculateTotal().toFixed(2)}
+          </div>
+          <Button 
+            variant="primary" 
+            onClick={() => setShowCheckoutModal(true)}
+            disabled={isUpdatingCart}
+          >
+            Proceed to Checkout
+          </Button>
+        </div>
+      )}
+    </Offcanvas.Body>
+  </Offcanvas>
+));
 
 const ProductCatalog = () => {
   const [products, setProducts] = useState([]);
@@ -62,6 +138,10 @@ const ProductCatalog = () => {
     paymentMode: '',
     contactNumber: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingStates, setLoadingStates] = useState({});
+  const [updatingQuantity, setUpdatingQuantity] = useState({});
+  const [isUpdatingCart, setIsUpdatingCart] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -77,7 +157,7 @@ const ProductCatalog = () => {
     const fetchCartItems = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/api/cart`, {
+        const response = await axios.get(`${API_URL}/cart`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json'
@@ -101,11 +181,15 @@ const ProductCatalog = () => {
   }, []);
 
   const fetchProducts = async () => {
+    setIsLoading(true);
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/products');
+      const response = await axios.get(`${API_URL}/products`);
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -125,45 +209,70 @@ const ProductCatalog = () => {
   });
 
   const addToCart = async (product) => {
+    setLoadingStates(prev => ({ ...prev, [product.id]: true }));
     try {
       const token = localStorage.getItem('token');
-      const existingItem = cart.find(item => item.id === product.id);
-      const quantity = existingItem ? existingItem.quantity + 1 : 1;
-
-      await axios.post(`${API_URL}/api/cart`, {
+      await axios.post(`${API_URL}/cart`, {
         product_id: product.id,
-        quantity: quantity
+        quantity: 1
       }, {
         headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json'
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         }
       });
-
-      if (existingItem) {
-        setCart(cart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        ));
-      } else {
-        setCart([...cart, { ...product, quantity: 1 }]);
-      }
+      await fetchCartItems();
+      toast.success('Added to cart');
     } catch (error) {
       console.error('Error adding to cart:', error);
+      toast.error('Failed to add to cart');
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [product.id]: false }));
     }
   };
 
-  const updateCartQuantity = (productId, change) => {
-    setCart(prevCart =>
-      prevCart.map(item => {
-        if (item.id === productId) {
-          const newQuantity = item.quantity + change;
-          return newQuantity > 0 ? { ...item, quantity: newQuantity } : null;
-        }
-        return item;
-      }).filter(Boolean)
+  const handleQuantityChange = async (item, change) => {
+    if (isUpdatingCart) return;
+    
+    const newQuantity = Math.max(1, item.quantity + change);
+    
+    // Update local state immediately for better UX
+    setCart(prevCart => 
+      prevCart.map(cartItem => 
+        cartItem.id === item.id 
+          ? { ...cartItem, quantity: newQuantity }
+          : cartItem
+      )
     );
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Make API call without waiting for response
+      axios.put(`${API_URL}/cart/${item.id}`, {
+        quantity: newQuantity
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      }).catch(error => {
+        console.error('Error updating quantity:', error);
+        toast.error('Failed to update quantity');
+        // Revert cart state on error
+        setCart(prevCart => 
+          prevCart.map(cartItem => 
+            cartItem.id === item.id 
+              ? { ...cartItem, quantity: item.quantity }
+              : cartItem
+          )
+        );
+      });
+
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      toast.error('Failed to update quantity');
+    }
   };
 
   const removeFromCart = async (productId) => {
@@ -181,7 +290,8 @@ const ProductCatalog = () => {
     return cart.reduce((total, item) => {
       const price = parseFloat(item.product?.price || item.price || 0);
       const quantity = parseInt(item.quantity || 0);
-      return total + (price * quantity);
+      // Ensure we don't return NaN or invalid values
+      return isNaN(total + (price * quantity)) ? total : total + (price * quantity);
     }, 0);
   };
 
@@ -289,7 +399,7 @@ const ProductCatalog = () => {
           <CartItem
             key={item.id}
             item={item}
-            onUpdateQuantity={updateCartItemQuantityOptimistic}
+            onUpdateQuantity={handleQuantityChange}
             onRemove={removeFromCart}
           />
         ))}
@@ -307,23 +417,25 @@ const ProductCatalog = () => {
     );
   };
 
-  // Add fetchCartItems function definition before it's used
+  // Update the fetchCartItems function to be more efficient
   const fetchCartItems = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/cart`, {
+      const response = await axios.get(`${API_URL}/cart`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       });
-      // Ensure cart items have the correct structure
+      
+      // Format the data once
       const formattedCart = response.data.map(item => ({
         id: item.id,
         product: item.product,
         quantity: parseInt(item.quantity || 1),
         price: parseFloat(item.product?.price || 0)
       }));
+      
       setCart(formattedCart);
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -356,56 +468,108 @@ const ProductCatalog = () => {
     }
   }, 500);
 
-  // Update the updateCartItemQuantityOptimistic function
-  const updateCartItemQuantityOptimistic = async (item, newQuantity) => {
-    try {
-      // Optimistically update the UI first
-      setCart(prevCart => 
-        prevCart.map(cartItem => 
-          cartItem.id === item.id 
-            ? { ...cartItem, quantity: newQuantity }
-            : cartItem
-        )
-      );
-
-      const token = localStorage.getItem('token');
-      
-      // Call the debounced update with the full item object
-      await debouncedUpdateCart(item, newQuantity, token);
-    } catch (error) {
-      console.error('Error updating cart item quantity:', error);
-      // Revert the optimistic update on error
-      toast.error('Failed to update quantity');
-      fetchCartItems(); // Refresh cart to get correct state
-    }
+  // Add these helper functions
+  const validateCartQuantity = (quantity, stockAvailable) => {
+    const validQuantity = Math.min(Math.max(1, quantity), stockAvailable);
+    return validQuantity;
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCustomerInfo({ ...customerInfo, [name]: value });
+    setCustomerInfo(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleModalCheckout = async () => {
-    // Validate customer info
-    if (!customerInfo.name || !customerInfo.address || !customerInfo.paymentMode || !customerInfo.contactNumber) {
-      toast.error('Please fill in all fields');
-      return;
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Validate required fields
+      if (!customerInfo.name || !customerInfo.address || !customerInfo.paymentMode || !customerInfo.contactNumber) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      const response = await axios.post(
+        `${API_URL}/checkout`,
+        {
+          customer_name: customerInfo.name,
+          shipping_address: customerInfo.address,
+          payment_method: customerInfo.paymentMode,
+          contact_number: customerInfo.contactNumber,
+          items: cart.map(item => ({
+            product_id: item.product.id,
+            quantity: item.quantity,
+            price: item.product.price
+          }))
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        toast.success('Order placed successfully!');
+        setShowCheckoutModal(false);
+        setCart([]); // Clear the cart
+        
+        // Reset customer info
+        setCustomerInfo({
+          name: '',
+          address: '',
+          paymentMode: '',
+          contactNumber: ''
+        });
+
+        // Refresh the products list
+        await fetchProducts();
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error(error.response?.data?.message || 'Failed to process checkout');
     }
-
-    // Proceed with checkout logic
-    await handleCheckout();
-
-    // Close modal and clear form
-    setShowCheckoutModal(false);
-    setCustomerInfo({
-      name: '',
-      address: '',
-      paymentMode: '',
-      contactNumber: ''
-    });
-
-    toast.success('Order placed successfully!');
   };
+
+  const renderCartItems = () => (
+    cart.map((item) => (
+      <ListGroup.Item key={item.id} className="cart-item">
+        <div className="item-details">
+          <div>
+            <h6>{item.product.description}</h6>
+            <p className="mb-0">Price: ${parseFloat(item.product.price).toFixed(2)}</p>
+          </div>
+          <div className="quantity-controls">
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              onClick={() => handleQuantityChange(item, -1)}
+              disabled={item.quantity <= 1 || isUpdatingCart}
+            >
+              <FontAwesomeIcon icon={faMinus} />
+            </Button>
+            <span className="quantity-display">{item.quantity}</span>
+            <Button
+              variant="outline-secondary"
+              size="sm"
+              onClick={() => handleQuantityChange(item, 1)}
+              disabled={isUpdatingCart}
+            >
+              <FontAwesomeIcon icon={faPlus} />
+            </Button>
+          </div>
+          <div className="item-total">
+            ${(item.quantity * parseFloat(item.product.price)).toFixed(2)}
+          </div>
+        </div>
+      </ListGroup.Item>
+    ))
+  );
 
   return (
     <div className="product-catalog">
@@ -434,45 +598,50 @@ const ProductCatalog = () => {
         </div>
 
         <Row className="products-grid">
-          {filteredProducts.map(product => (
-            <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-              <Card className="product-card">
-                <Card.Body>
-                  <Card.Title className="mb-3">{product.description}</Card.Title>
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <div className="price">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</div>
-                    <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
-                      {product.quantity > 0 ? `In Stock (${product.quantity})` : 'Out of Stock'}
-                    </Badge>
-                  </div>
-                  <div className="category-badge mb-3">
-                    <Badge bg="primary" className="category-label">
-                      {product.category}
-                    </Badge>
-                  </div>
-                  <Button 
-                    className="add-to-cart-btn"
-                    onClick={() => addToCart(product)}
-                    disabled={product.quantity === 0}
-                  >
-                    <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
-                    {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                  </Button>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
+          {isLoading ? (
+            <div className="text-center p-4">Loading products...</div>
+          ) : (
+            filteredProducts.map(product => (
+              <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+                <Card className="product-card">
+                  <Card.Body>
+                    <Card.Title className="mb-3">{product.description}</Card.Title>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <div className="price">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</div>
+                      <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
+                        {product.quantity > 0 ? `In Stock (${product.quantity})` : 'Out of Stock'}
+                      </Badge>
+                    </div>
+                    <div className="category-badge mb-3">
+                      <Badge bg="primary" className="category-label">
+                        {product.category}
+                      </Badge>
+                    </div>
+                    <Button 
+                      className="add-to-cart-btn"
+                      onClick={() => addToCart(product)}
+                      disabled={product.quantity === 0}
+                    >
+                      <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
+                      {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))
+          )}
         </Row>
       </Container>
 
-      <Offcanvas show={showCart} onHide={() => setShowCart(false)} placement="end" className="cart-sidebar">
-        <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Shopping Cart</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          {renderCartContent()}
-        </Offcanvas.Body>
-      </Offcanvas>
+      <MemoizedCartDisplay 
+        showCart={showCart}
+        setShowCart={setShowCart}
+        cart={cart}
+        handleQuantityChange={handleQuantityChange}
+        isUpdatingCart={isUpdatingCart}
+        setShowCheckoutModal={setShowCheckoutModal}
+        calculateTotal={calculateTotal}
+      />
 
       <Modal show={showCheckout} onHide={() => setShowCheckout(false)} size="lg">
         <Modal.Header closeButton>
@@ -539,54 +708,70 @@ const ProductCatalog = () => {
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group controlId="formName">
-              <Form.Label>Name</Form.Label>
+            <Form.Group controlId="formName" className="mb-3">
+              <Form.Label>Name *</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Enter your name"
                 name="name"
                 value={customerInfo.name}
                 onChange={handleInputChange}
+                required
               />
             </Form.Group>
 
-            <Form.Group controlId="formAddress">
-              <Form.Label>Address</Form.Label>
+            <Form.Group controlId="formAddress" className="mb-3">
+              <Form.Label>Address *</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Enter your address"
                 name="address"
                 value={customerInfo.address}
                 onChange={handleInputChange}
+                required
               />
             </Form.Group>
 
-            <Form.Group controlId="formPaymentMode">
-              <Form.Label>Mode of Payment</Form.Label>
+            <Form.Group controlId="formPaymentMode" className="mb-3">
+              <Form.Label>Mode of Payment *</Form.Label>
               <Form.Control
                 as="select"
                 name="paymentMode"
                 value={customerInfo.paymentMode}
                 onChange={handleInputChange}
+                required
               >
                 <option value="">Select payment mode</option>
-                <option value="credit_card">Credit Card</option>
-                <option value="paypal">PayPal</option>
                 <option value="cash_on_delivery">Cash on Delivery</option>
               </Form.Control>
             </Form.Group>
 
-            <Form.Group controlId="formContactNumber">
-              <Form.Label>Contact Number</Form.Label>
+            <Form.Group controlId="formContactNumber" className="mb-3">
+              <Form.Label>Contact Number *</Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Enter your contact number"
                 name="contactNumber"
                 value={customerInfo.contactNumber}
                 onChange={handleInputChange}
+                required
               />
             </Form.Group>
           </Form>
+          
+          <div className="order-summary mt-4">
+            <h5>Order Summary</h5>
+            <ListGroup>
+              {cart.map(item => (
+                <ListGroup.Item key={item.id}>
+                  {item.product.description} x {item.quantity} = ${(item.product.price * item.quantity).toFixed(2)}
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+            <div className="total mt-3">
+              <strong>Total: ${calculateTotal().toFixed(2)}</strong>
+            </div>
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowCheckoutModal(false)}>
