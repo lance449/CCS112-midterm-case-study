@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthForm from '../AuthForm';
-import { login } from '../api';
+import { login, API_URL } from '../api';
 
 const Login = () => {
   const [error, setError] = useState(null);
@@ -10,18 +10,17 @@ const Login = () => {
 
   const handleLogin = async (formData) => {
     try {
+      console.log('Attempting login to:', `${API_URL}/login`);
       const response = await login(formData.email, formData.password);
       
-      if (response.token) {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('userRole', response.user.role);
-        localStorage.setItem('userName', response.user.name);
+      if (response && response.token) {
         navigate(response.user.role === 'admin' ? '/dashboard' : '/products');
+      } else {
+        setError('Invalid response from server');
       }
-      
-    } catch (err) {
-      setError(err.message);
-      return false; // Important: return false to prevent form reset
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.message || 'Login failed');
     }
   };
 

@@ -1,14 +1,29 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+// Define base URL without /api suffix
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+export const API_URL = `${BASE_URL}/api`;
 
-// Add interceptor for token handling
+// Add request interceptor to include token
+axios.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token');
+    if (token && !config.url.includes('/login')) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  error => Promise.reject(error)
+);
+
+// Add response interceptor for error handling
 axios.interceptors.response.use(
   response => response,
   error => {
-    // Don't redirect on 401 during login attempts
     if (error.response?.status === 401 && !error.config.url.includes('/login')) {
       localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userName');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -34,23 +49,37 @@ export const register = async (name, email, password, password_confirmation) => 
 
 export const login = async (email, password) => {
   try {
+    // Explicitly construct the full URL
+    const loginUrl = `${API_URL}/login`;
+    console.log('Making login request to:', loginUrl); // Debug log
     const response = await axios.post(`${API_URL}/login`, {
       email,
       password
+    }, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
     });
+    
+    console.log('Login response:', response.data); // Debug log
+    
+    if (response.data && response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userRole', response.data.user.role);
+      localStorage.setItem('userName', response.data.user.name);
+    }
+    
     return response.data;
   } catch (error) {
-    // Create a consistent error structure
-    const errorMessage = 
-      error.response?.data?.message ||
-      error.response?.data?.error ||
-      'Invalid email or password';
-
-    // Throw a standardized error object
+    console.error('Login error details:', {
+      message: error.response?.data?.message,
+      status: error.response?.status,
+      url: error.config?.url
+    });
     throw {
-      message: errorMessage,
-      status: error.response?.status || 500,
-      timestamp: new Date().getTime()
+      message: error.response?.data?.message || 'Login failed',
+      status: error.response?.status || 500
     };
   }
 };

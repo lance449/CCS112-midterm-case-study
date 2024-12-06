@@ -157,21 +157,23 @@ const ProductCatalog = () => {
     const fetchCartItems = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/cart`, {
+        console.log('Fetching cart with URL:', `${API_URL}/api/cart`); // Debug log
+        
+        const response = await axios.get(`${API_URL}/api/cart`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
         });
-        const formattedCart = response.data.map(item => ({
-          id: item.id,
-          product: item.product,
-          quantity: parseInt(item.quantity || 1),
-          price: parseFloat(item.product?.price || 0)
-        }));
-        setCart(formattedCart);
+        
+        setCart(response.data);
       } catch (error) {
         console.error('Error fetching cart:', error);
+        // Log the full URL that was attempted
+        console.error('Attempted URL:', error.config?.url);
+        console.error('Failed to load cart items');
       }
     };
 
@@ -183,7 +185,14 @@ const ProductCatalog = () => {
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/products`);
+      const response = await axios.get(`${API_URL}/api/products`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -421,24 +430,23 @@ const ProductCatalog = () => {
   const fetchCartItems = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/cart`, {
+      console.log('Fetching cart with URL:', `${API_URL}/api/cart`); // Debug log
+      
+      const response = await axios.get(`${API_URL}/api/cart`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
       });
       
-      // Format the data once
-      const formattedCart = response.data.map(item => ({
-        id: item.id,
-        product: item.product,
-        quantity: parseInt(item.quantity || 1),
-        price: parseFloat(item.product?.price || 0)
-      }));
-      
-      setCart(formattedCart);
+      setCart(response.data);
     } catch (error) {
       console.error('Error fetching cart:', error);
+      // Log the full URL that was attempted
+      console.error('Attempted URL:', error.config?.url);
+      console.error('Failed to load cart items');
     }
   };
 
@@ -492,14 +500,16 @@ const ProductCatalog = () => {
         return;
       }
 
+      console.log('Sending order request...'); // Debug log
+
       const response = await axios.post(
-        `${API_URL}/checkout`,
+        `${API_URL}/api/orders`, // Changed to match OrderController's store endpoint
         {
           customer_name: customerInfo.name,
           shipping_address: customerInfo.address,
           payment_method: customerInfo.paymentMode,
           contact_number: customerInfo.contactNumber,
-          items: cart.map(item => ({
+          items: cart.map(item => ({  // Changed from cart_items to items to match OrderController
             product_id: item.product.id,
             quantity: item.quantity,
             price: item.product.price
@@ -510,7 +520,8 @@ const ProductCatalog = () => {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
-          }
+          },
+          withCredentials: true
         }
       );
 
@@ -532,6 +543,10 @@ const ProductCatalog = () => {
       }
     } catch (error) {
       console.error('Checkout error:', error);
+      console.log('Request details:', {
+        url: `${API_URL}/api/orders`,
+        data: error.response?.data
+      });
       toast.error(error.response?.data?.message || 'Failed to process checkout');
     }
   };
