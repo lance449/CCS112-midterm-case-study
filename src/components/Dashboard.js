@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Table, Button, Form, Modal, Card, Alert } from 'react-bootstrap';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Container, Row, Col, Table, Button, Form, Modal, Card, Alert, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faPlus, faEdit, faTrash, faChartLine, faUserPlus, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
@@ -9,9 +9,13 @@ import { logout } from '../api';
 import Sidebar from './Sidebar';
 import './Dashboard.css';
 import zxcvbn from 'zxcvbn';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Dashboard = () => {
+  const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const [showAdd, setShowAdd] = useState(false);
   const [newProduct, setNewProduct] = useState({
     barcode: '',
@@ -22,7 +26,6 @@ const Dashboard = () => {
   });
 
   const [editProduct, setEditProduct] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
   const [addErrors, setAddErrors] = useState({});
   const [editErrors, setEditErrors] = useState({});
@@ -44,15 +47,69 @@ const Dashboard = () => {
   const [passwordStrength, setPasswordStrength] = useState(null);
   const [formErrors, setFormErrors] = useState({});
 
+  const [isSearching, setIsSearching] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+
   const navigate = useNavigate();
 
   const fetchProducts = async () => {
+    setLoading(true);
+    setLoadingMessage('Loading products...');
     try {
       const response = await axios.get('http://127.0.0.1:8000/api/products');
-      setProducts(response.data);
+      if (response.data && response.data.data) {
+        setProducts(response.data.data);
+      } else {
+        setProducts([]);
+      }
     } catch (error) {
       console.error('Error fetching products:', error);
+      setProducts([]);
+    } finally {
+      setTimeout(() => {
+        setLoading(false);
+        setLoadingMessage('');
+      }, 300);
     }
+  };
+
+  const handleSearch = async (query) => {
+    setIsSearching(true);
+    setLoadingMessage('Searching products...');
+    try {
+      if (!query || query.trim() === '') {
+        await fetchProducts();
+        return;
+      }
+
+      const response = await axios.get(`http://127.0.0.1:8000/api/products/search?query=${query}`);
+      if (response.data && response.data.data) {
+        setProducts(response.data.data);
+      } else {
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error('Error searching products:', error);
+      setProducts([]);
+    } finally {
+      setTimeout(() => {
+        setIsSearching(false);
+        setLoadingMessage('');
+      }, 300);
+    }
+  };
+
+  const debouncedSearch = useCallback(
+    debounce((query) => {
+      handleSearch(query);
+    }, 300),
+    []
+  );
+
+  const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    debouncedSearch(value);
   };
 
   useEffect(() => {
@@ -115,26 +172,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleSearch = async (searchTerm) => {
-    try {
-      if (searchTerm.trim() === '') {
-        // If the search term is empty, fetch all products
-        const response = await axios.get('http://127.0.0.1:8000/api/products');
-        setProducts(response.data);
-      } else {
-        const response = await axios.get(`http://127.0.0.1:8000/api/products/search?query=${searchTerm}`);
-        setProducts(response.data);
-      }
-    } catch (error) {
-      console.error('Error searching products:', error);
-      // Optionally, you can set an error state here to display to the user
-    }
-  };
-
-  const debouncedSearch = debounce((term) => {
-    handleSearch(term);
-  }, 300);
-
   const handleLogout = async () => {
     await logout();
     localStorage.removeItem('token');
@@ -172,43 +209,71 @@ const Dashboard = () => {
   const handleCreateAdmin = async () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
-      setAdminErrors(validationErrors);
-      return;
+        setAdminErrors(validationErrors);
+        return;
     }
     
     setAdminErrors({});
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://127.0.0.1:8000/api/admin/create', 
-        {
-          ...newAdmin,
-          role: 'admin'
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+        const token = localStorage.getItem('token');
+        if (!token) {
+            setAdminErrors({ general: 'Not authenticated. Please log in again.' });
+            return;
         }
-      );
-      
-      if (response.status === 201) {
-        setShowCreateAdmin(false);
-        setNewAdmin({
-          name: '',
-          email: '',
-          password: '',
-          password_confirmation: ''
-        });
-        // Show success alert
-        alert('Admin account created successfully!');
-      }
+
+        console.log('Sending request with token:', token); // Debug log
+
+        const response = await axios.post(
+            'http://127.0.0.1:8000/api/admin/users', 
+            {
+                name: newAdmin.name,
+                email: newAdmin.email,
+                password: newAdmin.password,
+                password_confirmation: newAdmin.password_confirmation,
+                role: 'admin'
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            }
+        );
+        
+        if (response.status === 201) {
+            alert('Admin account created successfully!');
+            setNewAdmin({
+                name: '',
+                email: '',
+                password: '',
+                password_confirmation: ''
+            });
+            setShowCreateAdmin(false);
+        }
     } catch (error) {
-      if (error.response && error.response.data.errors) {
-        setAdminErrors(error.response.data.errors);
-      } else {
-        setAdminErrors({ general: 'An error occurred while creating the admin account.' });
-      }
+        console.error('Error creating admin:', error);
+        console.error('Error response:', error.response); // Debug log
+        
+        if (error.response) {
+            if (error.response.status === 401) {
+                setAdminErrors({ general: 'Not authenticated. Please log in again.' });
+            } else if (error.response.status === 403) {
+                setAdminErrors({ general: 'You do not have permission to create admin users.' });
+            } else if (error.response.status === 422) {
+                setAdminErrors(error.response.data.errors);
+            } else if (error.response.data && error.response.data.message) {
+                setAdminErrors({ general: error.response.data.message });
+            } else {
+                setAdminErrors({ 
+                    general: `Server error: ${error.response.status} - ${error.response.statusText}` 
+                });
+            }
+        } else {
+            setAdminErrors({ 
+                general: 'Network error. Please check your connection and try again.' 
+            });
+        }
     }
   };
 
@@ -261,10 +326,7 @@ const Dashboard = () => {
                       type="text"
                       placeholder="Search by item name or category"
                       value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        debouncedSearch(e.target.value);
-                      }}
+                      onChange={handleSearchInputChange}
                       onKeyUp={(e) => {
                         if (e.key === 'Enter') {
                           handleSearch(searchTerm);
@@ -312,23 +374,76 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((product) => (
-                    <tr key={product.id}>
-                      <td>{product.barcode}</td>
-                      <td>{product.description}</td>
-                      <td>${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
-                      <td>{product.quantity}</td>
-                      <td>{product.category}</td>
-                      <td>
-                        <Button variant="outline-primary" size="sm" className="me-2" onClick={() => setEditProduct(product)}>
-                          <FontAwesomeIcon icon={faEdit} className="me-1" /> Edit
-                        </Button>
-                        <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProduct(product)}>
-                          <FontAwesomeIcon icon={faTrash} className="me-1" /> Delete
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  <AnimatePresence mode="wait">
+                    {loading || isSearching ? (
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <td colSpan="6" className="text-center py-4">
+                          <div className="d-flex justify-content-center align-items-center">
+                            <Spinner animation="border" variant="primary" size="sm" className="me-2" />
+                            <span>{loadingMessage}</span>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ) : products && products.length > 0 ? (
+                      products.map((product) => (
+                        <motion.tr
+                          key={product.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <td>{product.barcode}</td>
+                          <td>{product.description}</td>
+                          <td>${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
+                          <td>{product.quantity}</td>
+                          <td>{product.category}</td>
+                          <td>
+                            <Button 
+                              variant="outline-primary" 
+                              size="sm" 
+                              className="me-2"
+                              onClick={() => setEditProduct(product)}
+                            >
+                              <FontAwesomeIcon icon={faEdit} className="me-1" /> Edit
+                            </Button>
+                            <Button 
+                              variant="outline-danger" 
+                              size="sm"
+                              onClick={() => handleDeleteProduct(product)}
+                            >
+                              <FontAwesomeIcon icon={faTrash} className="me-1" /> Delete
+                            </Button>
+                          </td>
+                        </motion.tr>
+                      ))
+                    ) : (
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <td colSpan="6" className="text-center py-4">
+                          {searchTerm ? (
+                            <div className="text-muted">
+                              <FontAwesomeIcon icon={faSearch} className="me-2" />
+                              No products found matching "{searchTerm}"
+                            </div>
+                          ) : (
+                            <div className="text-muted">
+                              No products available
+                            </div>
+                          )}
+                        </td>
+                      </motion.tr>
+                    )}
+                  </AnimatePresence>
                 </tbody>
               </Table>
             </Card.Body>
