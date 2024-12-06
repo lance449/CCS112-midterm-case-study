@@ -40,6 +40,12 @@ export const CartContext = React.createContext();
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
+const formatPrice = (price) => {
+  if (price === null || price === undefined) return '0.00';
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+};
+
 const MemoizedCartDisplay = React.memo(({ 
   showCart, 
   setShowCart, 
@@ -83,7 +89,7 @@ const MemoizedCartDisplay = React.memo(({
                 </div>
                 <div className="item-details">
                   <h6 className="item-title">{item.product.description}</h6>
-                  <div className="item-price">${item.product.price.toFixed(2)}</div>
+                  <div className="item-price">${formatPrice(item.product.price)}</div>
                   <div className="quantity-controls">
                     <Button
                       variant="light"
@@ -875,7 +881,7 @@ const ProductCatalog = () => {
             <ListGroup>
               {cart.map(item => (
                 <ListGroup.Item key={item.id}>
-                  {item.product.description} x {item.quantity} = ${(item.product.price * item.quantity).toFixed(2)}
+                  {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
                 </ListGroup.Item>
               ))}
             </ListGroup>
