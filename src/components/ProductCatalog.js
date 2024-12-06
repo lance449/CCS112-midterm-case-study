@@ -34,17 +34,14 @@ import NavigationBar from './Navbar';
 import { toast } from 'react-hot-toast';
 import './Cart.css';
 import { debounce } from 'lodash';
+import ErrorBoundary from './ErrorBoundary';
+import LoadingSpinner from './LoadingSpinner';
+import { formatPrice, calculateItemTotal, calculateCartTotal } from '../utils/priceFormatter';
 
 // Create a CartContext
 export const CartContext = React.createContext();
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-
-const formatPrice = (price) => {
-  if (price === null || price === undefined) return '0.00';
-  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-  return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
-};
 
 const MemoizedCartDisplay = React.memo(({ 
   showCart, 
@@ -95,7 +92,7 @@ const MemoizedCartDisplay = React.memo(({
                       variant="light"
                       size="sm"
                       onClick={() => handleDecrement(item)}
-                      disabled={item.quantity <= 1}
+                      disabled={isUpdatingCart}
                     >
                       <FontAwesomeIcon icon={faMinus} />
                     </Button>
@@ -104,37 +101,34 @@ const MemoizedCartDisplay = React.memo(({
                       variant="light"
                       size="sm"
                       onClick={() => handleIncrement(item)}
+                      disabled={isUpdatingCart}
                     >
                       <FontAwesomeIcon icon={faPlus} />
                     </Button>
+                    <Button
+                      variant="link"
+                      className="remove-button"
+                      onClick={() => handleRemoveItem(item.id)}
+                      disabled={isUpdatingCart}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
                   </div>
                 </div>
-                <Button
-                  variant="link"
-                  className="remove-item"
-                  onClick={() => handleRemoveItem(item)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
               </div>
             ))}
           </div>
           <div className="cart-footer">
-            <div className="cart-summary">
-              <div className="d-flex justify-content-between mb-2">
-                <span>Subtotal:</span>
-                <span>${calculateTotal().toFixed(2)}</span>
-              </div>
-              <Button 
-                variant="primary" 
-                size="lg" 
-                block 
-                onClick={() => setShowCheckoutModal(true)}
-                disabled={isUpdatingCart}
-              >
-                Proceed to Checkout
-              </Button>
+            <div className="cart-total">
+              <strong>Total:</strong> ${calculateCartTotal(cart)}
             </div>
+            <Button 
+              variant="primary" 
+              className="checkout-button"
+              onClick={() => setShowCheckoutModal(true)}
+            >
+              Proceed to Checkout
+            </Button>
           </div>
         </>
       )}
@@ -209,8 +203,8 @@ const ProductCatalog = () => {
   }, []);
 
   const fetchProducts = async () => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const response = await axios.get(`${API_URL}/api/products`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -354,10 +348,10 @@ const ProductCatalog = () => {
 
   const calculateTotal = () => {
     return cart.reduce((total, item) => {
-      const price = parseFloat(item.product?.price || item.price || 0);
-      const quantity = parseInt(item.quantity || 0);
-      // Ensure we don't return NaN or invalid values
-      return isNaN(total + (price * quantity)) ? total : total + (price * quantity);
+      const price = typeof item.product.price === 'string' 
+        ? parseFloat(item.product.price) 
+        : (item.product.price || 0);
+      return total + (price * item.quantity);
     }, 0);
   };
 
@@ -676,230 +670,230 @@ const ProductCatalog = () => {
   };
 
   return (
-    <div className="product-catalog">
-      <NavigationBar 
-        cartItemCount={cart.length} 
-        onCartClick={() => setShowCart(true)} 
-        onLogout={handleLogout}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-      />
-      
-      <Container className="mt-5 pt-4">
-        <div className="search-filter-container">
-          <div className="filter-row">
-            <Form.Select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="category-select"
-            >
-              <option value="">All Categories</option>
-              {categories.map((category, index) => (
-                <option key={index} value={category}>{category}</option>
-              ))}
-            </Form.Select>
-          </div>
-        </div>
-
-        <Row className="products-grid">
-          {isLoading ? (
-            <div className="text-center p-4">Loading products...</div>
-          ) : (
-            filteredProducts.map(product => (
-              <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-                <Card className="product-card h-100">
-                  <div className="product-image-container">
-                    <img 
-                      src={product.image || 'https://via.placeholder.com/200'} 
-                      alt={product.description}
-                      className="product-image"
-                    />
-                    {product.quantity <= 5 && product.quantity > 0 && (
-                      <Badge bg="warning" className="stock-warning">
-                        Low Stock
-                      </Badge>
-                    )}
-                  </div>
-                  <Card.Body className="d-flex flex-column">
-                    <Card.Title className="product-title text-truncate">
-                      {product.description}
-                    </Card.Title>
-                    <div className="product-details">
-                      <div className="price-tag">${formatPrice(product.price)}</div>
-                      <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
-                        {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
-                      </Badge>
-                    </div>
-                    <Button 
-                      className="mt-auto add-to-cart-btn"
-                      variant={product.quantity === 0 ? 'secondary' : 'primary'}
-                      onClick={() => addToCart(product)}
-                      disabled={product.quantity === 0}
-                    >
-                      <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
-                      {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))
-          )}
-        </Row>
-      </Container>
-
-      <MemoizedCartDisplay 
-        showCart={showCart}
-        setShowCart={setShowCart}
-        cart={cart}
-        handleQuantityChange={handleQuantityChange}
-        isUpdatingCart={isUpdatingCart}
-        setShowCheckoutModal={setShowCheckoutModal}
-        calculateTotal={calculateTotal}
-        handleIncrement={handleIncrement}
-        handleDecrement={handleDecrement}
-        handleRemoveItem={handleRemoveItem}
-      />
-
-      <Modal show={showCheckout} onHide={() => setShowCheckout(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Checkout</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Full Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={shippingDetails.name}
-                onChange={(e) => setShippingDetails({...shippingDetails, name: e.target.value})}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Shipping Address</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={shippingDetails.address}
-                onChange={(e) => setShippingDetails({...shippingDetails, address: e.target.value})}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Phone Number</Form.Label>
-              <Form.Control
-                type="tel"
-                value={shippingDetails.phone}
-                onChange={(e) => setShippingDetails({...shippingDetails, phone: e.target.value})}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Payment Method</Form.Label>
-              <Form.Select
-                value={shippingDetails.paymentMethod}
-                onChange={(e) => setShippingDetails({...shippingDetails, paymentMethod: e.target.value})}
-              >
-                <option value="cod">Cash on Delivery</option>
-              </Form.Select>
-            </Form.Group>
-          </Form>
-          <div className="order-summary">
-            <h5>Order Summary</h5>
-            <ListGroup>
-              {cart.map(item => (
-                <ListGroup.Item key={item.id}>
-                  {item.description} x {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-            <h5 className="mt-3">Total: ${calculateTotal().toFixed(2)}</h5>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCheckout(false)}>Cancel</Button>
-          <Button variant="primary" onClick={handleCheckout}>Place Order</Button>
-        </Modal.Footer>
-      </Modal>
-
-      <Modal show={showCheckoutModal} onHide={() => setShowCheckoutModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Checkout Information</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="formName" className="mb-3">
-              <Form.Label>Name *</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter your name"
-                name="name"
-                value={customerInfo.name}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formAddress" className="mb-3">
-              <Form.Label>Address *</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter your address"
-                name="address"
-                value={customerInfo.address}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formPaymentMode" className="mb-3">
-              <Form.Label>Mode of Payment *</Form.Label>
-              <Form.Control
-                as="select"
-                name="paymentMode"
-                value={customerInfo.paymentMode}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select payment mode</option>
-                <option value="cash_on_delivery">Cash on Delivery</option>
-              </Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId="formContactNumber" className="mb-3">
-              <Form.Label>Contact Number *</Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="Enter your contact number"
-                name="contactNumber"
-                value={customerInfo.contactNumber}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-          </Form>
+    <ErrorBoundary>
+      {isLoading ? <LoadingSpinner /> : (
+        <div className="product-catalog">
+          <NavigationBar 
+            cartItemCount={cart.length} 
+            onCartClick={() => setShowCart(true)} 
+            onLogout={handleLogout}
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+          />
           
-          <div className="order-summary mt-4">
-            <h5>Order Summary</h5>
-            <ListGroup>
-              {cart.map(item => (
-                <ListGroup.Item key={item.id}>
-                  {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-            <div className="total mt-3">
-              <strong>Total: ${calculateTotal().toFixed(2)}</strong>
+          <Container className="mt-5 pt-4">
+            <div className="search-filter-container">
+              <div className="filter-row">
+                <Form.Select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="category-select"
+                >
+                  <option value="">All Categories</option>
+                  {categories.map((category, index) => (
+                    <option key={index} value={category}>{category}</option>
+                  ))}
+                </Form.Select>
+              </div>
             </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowCheckoutModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleModalCheckout}>
-            Confirm Order
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+
+            <Row className="products-grid">
+              {filteredProducts.map(product => (
+                <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+                  <Card className="product-card h-100">
+                    <div className="product-image-container">
+                      <img 
+                        src={product.image || 'https://via.placeholder.com/200'} 
+                        alt={product.description}
+                        className="product-image"
+                      />
+                      {product.quantity <= 5 && product.quantity > 0 && (
+                        <Badge bg="warning" className="stock-warning">
+                          Low Stock
+                        </Badge>
+                      )}
+                    </div>
+                    <Card.Body className="d-flex flex-column">
+                      <Card.Title className="product-title text-truncate">
+                        {product.description}
+                      </Card.Title>
+                      <div className="product-details">
+                        <div className="price-tag">${formatPrice(product.price)}</div>
+                        <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
+                          {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
+                        </Badge>
+                      </div>
+                      <Button 
+                        className="mt-auto add-to-cart-btn"
+                        variant={product.quantity === 0 ? 'secondary' : 'primary'}
+                        onClick={() => addToCart(product)}
+                        disabled={product.quantity === 0}
+                      >
+                        <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
+                        {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </Container>
+
+          <MemoizedCartDisplay 
+            showCart={showCart}
+            setShowCart={setShowCart}
+            cart={cart}
+            handleQuantityChange={handleQuantityChange}
+            isUpdatingCart={isUpdatingCart}
+            setShowCheckoutModal={setShowCheckoutModal}
+            calculateTotal={calculateTotal}
+            handleIncrement={handleIncrement}
+            handleDecrement={handleDecrement}
+            handleRemoveItem={handleRemoveItem}
+          />
+
+          <Modal show={showCheckout} onHide={() => setShowCheckout(false)} size="lg">
+            <Modal.Header closeButton>
+              <Modal.Title>Checkout</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group className="mb-3">
+                  <Form.Label>Full Name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={shippingDetails.name}
+                    onChange={(e) => setShippingDetails({...shippingDetails, name: e.target.value})}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Shipping Address</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={shippingDetails.address}
+                    onChange={(e) => setShippingDetails({...shippingDetails, address: e.target.value})}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Phone Number</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    value={shippingDetails.phone}
+                    onChange={(e) => setShippingDetails({...shippingDetails, phone: e.target.value})}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Payment Method</Form.Label>
+                  <Form.Select
+                    value={shippingDetails.paymentMethod}
+                    onChange={(e) => setShippingDetails({...shippingDetails, paymentMethod: e.target.value})}
+                  >
+                    <option value="cod">Cash on Delivery</option>
+                  </Form.Select>
+                </Form.Group>
+              </Form>
+              <div className="order-summary">
+                <h5>Order Summary</h5>
+                <ListGroup>
+                  {cart.map(item => (
+                    <ListGroup.Item key={item.id}>
+                      {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+                <h5 className="mt-3">Total: ${formatPrice(calculateTotal())}</h5>
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowCheckout(false)}>Cancel</Button>
+              <Button variant="primary" onClick={handleCheckout}>Place Order</Button>
+            </Modal.Footer>
+          </Modal>
+
+          <Modal show={showCheckoutModal} onHide={() => setShowCheckoutModal(false)}>
+            <Modal.Header closeButton>
+              <Modal.Title>Checkout Information</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <Form>
+                <Form.Group controlId="formName" className="mb-3">
+                  <Form.Label>Name *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter your name"
+                    name="name"
+                    value={customerInfo.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Group>
+
+                <Form.Group controlId="formAddress" className="mb-3">
+                  <Form.Label>Address *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter your address"
+                    name="address"
+                    value={customerInfo.address}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Group>
+
+                <Form.Group controlId="formPaymentMode" className="mb-3">
+                  <Form.Label>Mode of Payment *</Form.Label>
+                  <Form.Control
+                    as="select"
+                    name="paymentMode"
+                    value={customerInfo.paymentMode}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Select payment mode</option>
+                    <option value="cash_on_delivery">Cash on Delivery</option>
+                  </Form.Control>
+                </Form.Group>
+
+                <Form.Group controlId="formContactNumber" className="mb-3">
+                  <Form.Label>Contact Number *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter your contact number"
+                    name="contactNumber"
+                    value={customerInfo.contactNumber}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Form.Group>
+              </Form>
+              
+              <div className="order-summary mt-4">
+                <h5>Order Summary</h5>
+                <ListGroup>
+                  {cart.map(item => (
+                    <ListGroup.Item key={item.id}>
+                      {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+                <div className="total mt-3">
+                  <strong>Total: ${formatPrice(calculateTotal())}</strong>
+                </div>
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowCheckoutModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={handleModalCheckout}>
+                Confirm Order
+              </Button>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
+    </ErrorBoundary>
   );
 };
 
