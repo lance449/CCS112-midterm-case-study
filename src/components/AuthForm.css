@@ -240,6 +240,7 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* Reset all form control styles to default first */
 .form-control {
   border: 2px solid #e2e8f0;
   border-radius: 0.75rem;
@@ -247,28 +248,150 @@ body {
   transition: all 0.3s ease;
   background-color: #ffffff !important;
   color: #2d3748 !important;
+  background-image: none !important;
 }
 
-.form-control:focus {
+/* Remove default Bootstrap invalid styles */
+.form-control.is-invalid {
+  border-color: #e2e8f0;
+  background-image: none !important;
+}
+
+/* Only style fields with specific errors */
+.form-control[data-error="true"] {
+  border-color: #dc3545 !important;
+  background-image: none !important;
+}
+
+/* Focus styles for normal state */
+.form-control:focus:not([data-error="true"]) {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+}
+
+/* Focus styles for error state */
+.form-control[data-error="true"]:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+/* Error message styling */
+.field-error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Remove Bootstrap's default validation styling */
+.was-validated .form-control:invalid,
+.was-validated .form-control:valid {
+  border-color: #e2e8f0;
+  background-image: none !important;
+}
+
+/* Keep existing dark mode overrides */
+body.dark-mode .form-control {
   background-color: #ffffff !important;
   color: #2d3748 !important;
 }
 
-/* Override any dark mode styles that might be inherited */
-body.dark-mode .auth-page,
-body.dark-mode .auth-form-container,
-body.dark-mode .form-control,
-body.dark-mode .form-label,
-body.dark-mode .auth-title,
-body.dark-mode .auth-alt-link a {
-  background-color: #ffffff !important;
-  color: #2d3748 !important;
+/* Validation message container */
+.validation-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #fff;
+  animation: slideIn 0.2s ease-in-out;
 }
 
-body.dark-mode .form-control:focus {
-  background-color: #ffffff !important;
-  color: #2d3748 !important;
-  border-color: var(--accent-color) !important;
+/* Validation icon styling */
+.validation-icon {
+  color: #f59e0b;
+  font-size: 16px;
+}
+
+/* Form control with error */
+.form-control.is-invalid {
+  border-color: #dc3545;
+  padding-right: calc(1.5em + 0.75rem);
+  background-image: none !important;
+}
+
+/* Animation for validation message */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Remove default Bootstrap validation icons */
+.form-control.is-invalid:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+/* Style for the validation message text */
+.validation-message-text {
+  font-size: 0.875rem;
+  color: #dc3545;
+}
+
+/* Container for input and validation message */
+.input-validation-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+/* Keep existing dark mode overrides */
+body.dark-mode .validation-message {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Remove any conflicting Bootstrap styles */
+.was-validated .form-control:invalid,
+.was-validated .form-control:valid {
+  background-image: none !important;
+}
+
+/* Password strength styles */
+.password-strength {
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.password-strength-text {
+  margin-left: 0.5rem;
+}
+
+.strength-none {
+  color: #718096;
+}
+
+.strength-weak {
+  color: #e53e3e;
+}
+
+.strength-fair {
+  color: #d69e2e;
+}
+
+.strength-good {
+  color: #38a169;
+}
+
+.strength-strong {
+  color: #2b6cb0;
 }

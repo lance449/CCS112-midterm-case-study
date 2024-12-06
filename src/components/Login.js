@@ -8,9 +8,30 @@ const Login = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const validateLoginData = (formData) => {
+    const errors = {};
+    
+    // Basic required field validation only
+    if (!formData.email?.trim()) {
+      errors.email = 'Email is required';
+    }
+    
+    if (!formData.password?.trim()) {
+      errors.password = 'Password is required';
+    }
+    
+    return errors;
+  };
+
   const handleLogin = async (formData) => {
     try {
-      console.log('Attempting login to:', `${API_URL}/login`);
+      // Simple validation before API call
+      const validationErrors = validateLoginData(formData);
+      if (Object.keys(validationErrors).length > 0) {
+        setError('Please fill in all required fields');
+        return;
+      }
+      
       const response = await login(formData.email, formData.password);
       
       if (response && response.token) {
@@ -19,7 +40,6 @@ const Login = () => {
         setError('Invalid response from server');
       }
     } catch (error) {
-      console.error('Login error:', error);
       setError(error.message || 'Login failed');
     }
   };
