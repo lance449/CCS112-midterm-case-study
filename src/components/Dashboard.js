@@ -10,6 +10,8 @@ import Sidebar from './Sidebar';
 import './Dashboard.css';
 import zxcvbn from 'zxcvbn';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,34 @@ const Dashboard = () => {
   const [loadingMessage, setLoadingMessage] = useState('');
 
   const navigate = useNavigate();
+
+  // Notification helpers
+  const notifySuccess = (message) => toast.success(message, {
+    position: "top-right",
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+
+  const notifyError = (message) => toast.error(message, {
+    position: "top-right",
+    autoClose: 4000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+
+  const notifyWarning = (message) => toast.warning(message, {
+    position: "top-right",
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -130,11 +160,14 @@ const Dashboard = () => {
         quantity: '',
         category: '',
       });
+      notifySuccess('Product added successfully! 🎉');
     } catch (error) {
       if (error.response && error.response.data.errors) {
         setAddErrors(error.response.data.errors);
+        notifyError('Failed to add product. Please check the form.');
       } else {
         setAddErrors({ general: 'An error occurred while adding the product.' });
+        notifyError('An error occurred while adding the product.');
       }
     }
   };
@@ -147,12 +180,15 @@ const Dashboard = () => {
       if (response.status === 200) {
         setEditProduct(null);
         fetchProducts();
+        notifySuccess('Product updated successfully! 📝');
       }
     } catch (error) {
       if (error.response && error.response.data.errors) {
         setEditErrors(error.response.data.errors);
+        notifyError('Failed to update product. Please check the form.');
       } else {
         setEditErrors({ general: 'An error occurred while updating the product.' });
+        notifyError('An error occurred while updating the product.');
       }
     }
   };
@@ -166,9 +202,10 @@ const Dashboard = () => {
       await axios.delete(`http://127.0.0.1:8000/api/products/${productToDelete.id}`);
       fetchProducts();
       setProductToDelete(null);
+      notifySuccess('Product deleted successfully! 🗑️');
     } catch (error) {
       console.error('Error deleting product:', error);
-      // Optionally, you can set an error state here to display to the user
+      notifyError('Failed to delete product. Please try again.');
     }
   };
 
@@ -209,71 +246,64 @@ const Dashboard = () => {
   const handleCreateAdmin = async () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
-        setAdminErrors(validationErrors);
-        return;
+      setAdminErrors(validationErrors);
+      notifyWarning('Please fill in all required fields correctly.');
+      return;
     }
     
     setAdminErrors({});
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            setAdminErrors({ general: 'Not authenticated. Please log in again.' });
-            return;
-        }
+      const token = localStorage.getItem('token');
+      if (!token) {
+        notifyError('Not authenticated. Please log in again.');
+        return;
+      }
 
-        console.log('Sending request with token:', token); // Debug log
-
-        const response = await axios.post(
-            'http://127.0.0.1:8000/api/admin/users', 
-            {
-                name: newAdmin.name,
-                email: newAdmin.email,
-                password: newAdmin.password,
-                password_confirmation: newAdmin.password_confirmation,
-                role: 'admin'
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            }
-        );
-        
-        if (response.status === 201) {
-            alert('Admin account created successfully!');
-            setNewAdmin({
-                name: '',
-                email: '',
-                password: '',
-                password_confirmation: ''
-            });
-            setShowCreateAdmin(false);
+      const response = await axios.post(
+        'http://127.0.0.1:8000/api/admin/users', 
+        {
+          name: newAdmin.name,
+          email: newAdmin.email,
+          password: newAdmin.password,
+          password_confirmation: newAdmin.password_confirmation,
+          role: 'admin'
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
         }
+      );
+      
+      if (response.status === 201) {
+        notifySuccess('Admin account created successfully! 👤');
+        setNewAdmin({
+          name: '',
+          email: '',
+          password: '',
+          password_confirmation: ''
+        });
+        setShowCreateAdmin(false);
+      }
     } catch (error) {
-        console.error('Error creating admin:', error);
-        console.error('Error response:', error.response); // Debug log
-        
-        if (error.response) {
-            if (error.response.status === 401) {
-                setAdminErrors({ general: 'Not authenticated. Please log in again.' });
-            } else if (error.response.status === 403) {
-                setAdminErrors({ general: 'You do not have permission to create admin users.' });
-            } else if (error.response.status === 422) {
-                setAdminErrors(error.response.data.errors);
-            } else if (error.response.data && error.response.data.message) {
-                setAdminErrors({ general: error.response.data.message });
-            } else {
-                setAdminErrors({ 
-                    general: `Server error: ${error.response.status} - ${error.response.statusText}` 
-                });
-            }
+      console.error('Error creating admin:', error);
+      
+      if (error.response) {
+        if (error.response.status === 401) {
+          notifyError('Not authenticated. Please log in again.');
+        } else if (error.response.status === 403) {
+          notifyError('You do not have permission to create admin users.');
+        } else if (error.response.status === 422) {
+          setAdminErrors(error.response.data.errors);
+          notifyError('Validation failed. Please check the form.');
         } else {
-            setAdminErrors({ 
-                general: 'Network error. Please check your connection and try again.' 
-            });
+          notifyError('Failed to create admin account. Please try again.');
         }
+      } else {
+        notifyError('Network error. Please check your connection.');
+      }
     }
   };
 
@@ -302,6 +332,18 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Sidebar 
         onLogout={handleLogout} 
         onCreateAdmin={() => setShowCreateAdmin(true)}
