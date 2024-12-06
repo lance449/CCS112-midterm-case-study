@@ -244,4 +244,41 @@
 
 .Toastify__close-button:hover {
   opacity: 1;
+}
+
+/* Add new styles for modal form groups */
+.modal .form-group {
+  margin-bottom: 1.5rem;  /* Consistent spacing for all modal form groups */
+}
+
+/* Add padding to modal body */
+.modal-body {
+  padding: 1.5rem;
+}
+
+/* Add spacing between form controls */
+.modal .form-control {
+  margin-bottom: 1rem;
+}
+
+/* Add spacing after form labels */
+.modal .form-label {
+  margin-bottom: 0.5rem;
+  display: block;
+  color: #212529;  /* Darker color for better visibility */
+  font-weight: 500;  /* Make the text slightly bolder */
+}
+
+/* In case Bootstrap is overriding, add more specificity */
+.modal-body .form-group .form-label,
+.modal-body Form.Label {
+  color: #212529 !important;  /* Use !important only if needed */
+  font-weight: 500;
+} 
+
+.form-heading {
+  color: #212529;
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
 } 

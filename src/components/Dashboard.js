@@ -146,8 +146,83 @@ const Dashboard = () => {
     fetchProducts();
   }, []);
 
-  // Handle Add Product
+  // Add these validation utility functions
+  const validateProductData = (data) => {
+    const errors = {};
+    
+    // Barcode validation
+    if (!data.barcode || data.barcode.trim() === '') {
+      errors.barcode = 'Barcode is required';
+    }
+
+    // Description validation
+    if (!data.description || data.description.trim() === '') {
+      errors.description = 'Description is required';
+    }
+
+    // Price validation
+    if (!data.price) {
+      errors.price = 'Price is required';
+    } else if (isNaN(data.price) || parseFloat(data.price) < 0) {
+      errors.price = 'Price must be a valid positive number';
+    }
+
+    // Quantity validation
+    if (!data.quantity) {
+      errors.quantity = 'Quantity is required';
+    } else if (isNaN(data.quantity) || parseInt(data.quantity) < 0) {
+      errors.quantity = 'Quantity must be a valid positive number';
+    }
+
+    // Category validation
+    if (!data.category || data.category.trim() === '') {
+      errors.category = 'Category is required';
+    }
+
+    return errors;
+  };
+
+  const validateAdminData = (data) => {
+    const errors = {};
+    
+    // Name validation
+    if (!data.name || data.name.trim() === '') {
+      errors.name = 'Name is required';
+    }
+    
+    // Email validation
+    if (!data.email || data.email.trim() === '') {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(data.email)) {
+      errors.email = 'Email is invalid';
+    }
+    
+    // Password validation
+    if (!data.password) {
+      errors.password = 'Password is required';
+    } else if (data.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    }
+    
+    // Password confirmation validation
+    if (!data.password_confirmation) {
+      errors.password_confirmation = 'Please confirm password';
+    } else if (data.password !== data.password_confirmation) {
+      errors.password_confirmation = 'Passwords do not match';
+    }
+    
+    return errors;
+  };
+
+  // Update the handleAddProduct function
   const handleAddProduct = async () => {
+    const validationErrors = validateProductData(newProduct);
+    if (Object.keys(validationErrors).length > 0) {
+      setAddErrors(validationErrors);
+      notifyWarning('Please fill in all required fields correctly.');
+      return;
+    }
+
     setAddErrors({});
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/products', newProduct);
@@ -172,8 +247,15 @@ const Dashboard = () => {
     }
   };
 
-  // Handle Edit Product
+  // Update the handleEditProduct function
   const handleEditProduct = async () => {
+    const validationErrors = validateProductData(editProduct);
+    if (Object.keys(validationErrors).length > 0) {
+      setEditErrors(validationErrors);
+      notifyWarning('Please fill in all required fields correctly.');
+      return;
+    }
+
     setEditErrors({});
     try {
       const response = await axios.put(`http://127.0.0.1:8000/api/products/${editProduct.id}`, editProduct);
@@ -215,36 +297,9 @@ const Dashboard = () => {
     navigate('/login');
   };
 
-  const validateForm = () => {
-    const errors = {};
-    
-    if (!newAdmin.name.trim()) {
-      errors.name = 'Name is required';
-    }
-    
-    if (!newAdmin.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(newAdmin.email)) {
-      errors.email = 'Email is invalid';
-    }
-    
-    if (!newAdmin.password) {
-      errors.password = 'Password is required';
-    } else if (newAdmin.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters';
-    }
-    
-    if (!newAdmin.password_confirmation) {
-      errors.password_confirmation = 'Please confirm password';
-    } else if (newAdmin.password !== newAdmin.password_confirmation) {
-      errors.password_confirmation = 'Passwords do not match';
-    }
-    
-    return errors;
-  };
-
+  // Update the handleCreateAdmin function
   const handleCreateAdmin = async () => {
-    const validationErrors = validateForm();
+    const validationErrors = validateAdminData(newAdmin);
     if (Object.keys(validationErrors).length > 0) {
       setAdminErrors(validationErrors);
       notifyWarning('Please fill in all required fields correctly.');
@@ -500,46 +555,56 @@ const Dashboard = () => {
           <Modal.Body>
             <Form>
               {addErrors.general && <Alert variant="danger">{addErrors.general}</Alert>}
-              <Form.Group controlId="barcode">
-                <Form.Label>Barcode</Form.Label>
+              
+              <Form.Group className="admin-form-group">
+                <h6 className="form-heading mb-2">Barcode</h6>
                 <Form.Control
                   type="text"
                   value={newProduct.barcode}
                   onChange={(e) => setNewProduct({ ...newProduct, barcode: e.target.value })}
                   isInvalid={!!addErrors.barcode}
+                  placeholder="Enter product barcode"
                 />
                 <Form.Control.Feedback type="invalid">{addErrors.barcode}</Form.Control.Feedback>
               </Form.Group>
-              <Form.Group controlId="description">
-                <Form.Label>Description</Form.Label>
+
+              <Form.Group className="admin-form-group">
+                <h6 className="form-heading mb-2">Description</h6>
                 <Form.Control
                   type="text"
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                  placeholder="Enter product description"
                 />
               </Form.Group>
-              <Form.Group controlId="price">
-                <Form.Label>Price</Form.Label>
+
+              <Form.Group className="admin-form-group">
+                <h6 className="form-heading mb-2">Price</h6>
                 <Form.Control
                   type="text"
                   value={newProduct.price}
                   onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                  placeholder="Enter product price"
                 />
               </Form.Group>
-              <Form.Group controlId="quantity">
-                <Form.Label>Quantity</Form.Label>
+
+              <Form.Group className="admin-form-group">
+                <h6 className="form-heading mb-2">Quantity</h6>
                 <Form.Control
                   type="number"
                   value={newProduct.quantity}
                   onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+                  placeholder="Enter product quantity"
                 />
               </Form.Group>
-              <Form.Group controlId="category">
-                <Form.Label>Category</Form.Label>
+
+              <Form.Group className="admin-form-group">
+                <h6 className="form-heading mb-2">Category</h6>
                 <Form.Control
                   type="text"
                   value={newProduct.category}
                   onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                  placeholder="Enter product category"
                 />
               </Form.Group>
             </Form>
@@ -559,8 +624,9 @@ const Dashboard = () => {
             <Modal.Body>
               <Form>
                 {editErrors.general && <Alert variant="danger">{editErrors.general}</Alert>}
-                <Form.Group controlId="barcode">
-                  <Form.Label>Barcode</Form.Label>
+                
+                <Form.Group className="admin-form-group">
+                  <h6 className="form-heading mb-2">Barcode</h6>
                   <Form.Control
                     type="text"
                     value={editProduct.barcode}
@@ -569,32 +635,36 @@ const Dashboard = () => {
                   />
                   <Form.Control.Feedback type="invalid">{editErrors.barcode}</Form.Control.Feedback>
                 </Form.Group>
-                <Form.Group controlId="description">
-                  <Form.Label>Description</Form.Label>
+
+                <Form.Group className="admin-form-group">
+                  <h6 className="form-heading mb-2">Description</h6>
                   <Form.Control
                     type="text"
                     value={editProduct.description}
                     onChange={(e) => setEditProduct({ ...editProduct, description: e.target.value })}
                   />
                 </Form.Group>
-                <Form.Group controlId="price">
-                  <Form.Label>Price</Form.Label>
+
+                <Form.Group className="admin-form-group">
+                  <h6 className="form-heading mb-2">Price</h6>
                   <Form.Control
                     type="text"
                     value={editProduct.price}
                     onChange={(e) => setEditProduct({ ...editProduct, price: e.target.value })}
                   />
                 </Form.Group>
-                <Form.Group controlId="quantity">
-                  <Form.Label>Quantity</Form.Label>
+
+                <Form.Group className="admin-form-group">
+                  <h6 className="form-heading mb-2">Quantity</h6>
                   <Form.Control
                     type="number"
                     value={editProduct.quantity}
                     onChange={(e) => setEditProduct({ ...editProduct, quantity: e.target.value })}
                   />
                 </Form.Group>
-                <Form.Group controlId="category">
-                  <Form.Label>Category</Form.Label>
+
+                <Form.Group className="admin-form-group">
+                  <h6 className="form-heading mb-2">Category</h6>
                   <Form.Control
                     type="text"
                     value={editProduct.category}
@@ -643,7 +713,7 @@ const Dashboard = () => {
               {adminErrors.general && <Alert variant="danger">{adminErrors.general}</Alert>}
               
               <Form.Group className="admin-form-group">
-                <Form.Label className="admin-form-label">Full Name</Form.Label>
+                <h6 className="form-heading mb-2">Full Name</h6>
                 <Form.Control
                   type="text"
                   value={newAdmin.name}
@@ -655,7 +725,7 @@ const Dashboard = () => {
               </Form.Group>
 
               <Form.Group className="admin-form-group">
-                <Form.Label className="admin-form-label">Email Address</Form.Label>
+                <h6 className="form-heading mb-2">Email Address</h6>
                 <Form.Control
                   type="email"
                   value={newAdmin.email}
@@ -667,7 +737,7 @@ const Dashboard = () => {
               </Form.Group>
 
               <Form.Group className="admin-form-group">
-                <Form.Label className="admin-form-label">Password</Form.Label>
+                <h6 className="form-heading mb-2">Password</h6>
                 <div className="password-input-wrapper">
                   <Form.Control
                     type={showPassword ? "text" : "password"}
@@ -700,7 +770,7 @@ const Dashboard = () => {
               </Form.Group>
 
               <Form.Group className="admin-form-group">
-                <Form.Label className="admin-form-label">Confirm Password</Form.Label>
+                <h6 className="form-heading mb-2">Confirm Password</h6>
                 <div className="password-input-wrapper">
                   <Form.Control
                     type={showConfirmPassword ? "text" : "password"}
