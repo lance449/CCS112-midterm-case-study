@@ -265,6 +265,19 @@ const ProductCatalog = () => {
   const [updatingQuantity, setUpdatingQuantity] = useState({});
   const [isUpdatingCart, setIsUpdatingCart] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sortOption, setSortOption] = useState('default');
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    address: '',
+    contactNumber: '',
+    paymentMode: ''
+  });
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const isDark = document.body.classList.contains('dark-mode');
+    setIsDarkMode(isDark);
+  }, []);
 
   useEffect(() => {
     fetchProducts();
@@ -714,28 +727,75 @@ const ProductCatalog = () => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validateCheckoutForm = () => {
+    const errors = {};
+    let isValid = true;
+
+    // Name validation
+    if (!customerInfo.name.trim()) {
+      errors.name = 'Name is required';
+      isValid = false;
+    } else if (customerInfo.name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+      isValid = false;
+    }
+
+    // Address validation
+    if (!customerInfo.address.trim()) {
+      errors.address = 'Address is required';
+      isValid = false;
+    } else if (customerInfo.address.trim().length < 10) {
+      errors.address = 'Please enter a complete address';
+      isValid = false;
+    }
+
+    // Contact number validation
+    if (!customerInfo.contactNumber.trim()) {
+      errors.contactNumber = 'Contact number is required';
+      isValid = false;
+    } else if (!/^(09|\+639)\d{9}$/.test(customerInfo.contactNumber.trim())) {
+      errors.contactNumber = 'Please enter a valid Philippine mobile number';
+      isValid = false;
+    }
+
+    // Payment mode validation
+    if (!customerInfo.paymentMode) {
+      errors.paymentMode = 'Please select a payment mode';
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
   };
 
   const handleModalCheckout = async () => {
+    if (!validateCheckoutForm()) {
+      notifyError('Please fill in all required fields correctly');
+      return;
+    }
+
     try {
       setLoading(true);
       const loadingToastId = notifyInfo('Processing your order...', { duration: null });
 
       const token = localStorage.getItem('token');
       
-      if (!customerInfo.name || !customerInfo.address || !customerInfo.paymentMode || !customerInfo.contactNumber) {
-        notifyWarning('Please fill in all required fields');
-        toast.dismiss(loadingToastId);
-        return;
-      }
-
       const response = await axios.post(
         `${API_URL}/api/orders`,
         {
-          customer_name: customerInfo.name,
-          shipping_address: customerInfo.address,
+          customer_name: customerInfo.name.trim(),
+          shipping_address: customerInfo.address.trim(),
           payment_method: customerInfo.paymentMode,
-          contact_number: customerInfo.contactNumber,
+          contact_number: customerInfo.contactNumber.trim(),
           items: cart.map(item => ({
             product_id: item.product.id,
             quantity: item.quantity,
@@ -862,6 +922,24 @@ const ProductCatalog = () => {
     }
   };
 
+  // Add this sorting function
+  const getSortedProducts = useCallback((products) => {
+    if (!Array.isArray(products)) return [];
+    
+    switch (sortOption) {
+      case 'price-asc':
+        return [...products].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      case 'price-desc':
+        return [...products].sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+      case 'name-asc':
+        return [...products].sort((a, b) => a.description.localeCompare(b.description));
+      case 'name-desc':
+        return [...products].sort((a, b) => b.description.localeCompare(a.description));
+      default:
+        return products;
+    }
+  }, [sortOption]);
+
   if (isLoading) {
     return <PageSpinner />;
   }
@@ -890,11 +968,23 @@ const ProductCatalog = () => {
                   <option key={index} value={category}>{category}</option>
                 ))}
               </Form.Select>
+
+              <Form.Select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                className="sort-select"
+              >
+                <option value="default">Sort By</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name-asc">Name: A to Z</option>
+                <option value="name-desc">Name: Z to A</option>
+              </Form.Select>
             </div>
           </div>
 
           <Row className="products-grid">
-            {filteredProducts.map(product => (
+            {getSortedProducts(filteredProducts).map(product => (
               <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
                 <Card className="product-card h-100">
                   <div className="product-image-container">
@@ -1011,71 +1101,111 @@ const ProductCatalog = () => {
           </Modal.Footer>
         </Modal>
 
-        <Modal show={showCheckoutModal} onHide={() => setShowCheckoutModal(false)}>
+        <Modal 
+          show={showCheckoutModal} 
+          onHide={() => setShowCheckoutModal(false)}
+          className={isDarkMode ? 'dark-mode' : ''}
+        >
           <Modal.Header closeButton className="checkout-modal-header">
             <Modal.Title>Checkout Information</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form>
+            <Form noValidate>
               <Form.Group controlId="formName" className="mb-3">
-                <Form.Label className="form-label">
-                  Name <span className="text-danger">*</span>
-                </Form.Label>
+                <h6 style={{ 
+                  color: '#000000', 
+                  fontWeight: '700', 
+                  marginBottom: '8px',
+                  fontSize: '1rem',
+                  opacity: '1'
+                }}>
+                  Name <span style={{ color: '#dc2626' }}>*</span>
+                </h6>
                 <Form.Control
                   type="text"
                   placeholder="Enter your name"
                   name="name"
                   value={customerInfo.name}
                   onChange={handleInputChange}
-                  required
+                  isInvalid={!!formErrors.name}
                   className="form-control-dark"
                 />
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.name}
+                </Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group controlId="formAddress" className="mb-3">
-                <Form.Label className="form-label">
-                  Address <span className="text-danger">*</span>
-                </Form.Label>
+                <h6 style={{ 
+                  color: '#000000', 
+                  fontWeight: '700', 
+                  marginBottom: '8px',
+                  fontSize: '1rem',
+                  opacity: '1'
+                }}>
+                  Address <span style={{ color: '#dc2626' }}>*</span>
+                </h6>
                 <Form.Control
                   type="text"
-                  placeholder="Enter your address"
+                  placeholder="Enter your complete address"
                   name="address"
                   value={customerInfo.address}
                   onChange={handleInputChange}
-                  required
+                  isInvalid={!!formErrors.address}
                   className="form-control-dark"
                 />
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.address}
+                </Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group controlId="formPaymentMode" className="mb-3">
-                <Form.Label className="form-label">
-                  Mode of Payment <span className="text-danger">*</span>
-                </Form.Label>
+                <h6 style={{ 
+                  color: '#000000', 
+                  fontWeight: '700', 
+                  marginBottom: '8px',
+                  fontSize: '1rem',
+                  opacity: '1'
+                }}>
+                  Mode of Payment <span style={{ color: '#dc2626' }}>*</span>
+                </h6>
                 <Form.Select
                   name="paymentMode"
                   value={customerInfo.paymentMode}
                   onChange={handleInputChange}
-                  required
+                  isInvalid={!!formErrors.paymentMode}
                   className="form-control-dark"
                 >
                   <option value="">Select payment mode</option>
                   <option value="cash_on_delivery">Cash on Delivery</option>
                 </Form.Select>
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.paymentMode}
+                </Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group controlId="formContactNumber" className="mb-3">
-                <Form.Label className="form-label">
-                  Contact Number <span className="text-danger">*</span>
-                </Form.Label>
+                <h6 style={{ 
+                  color: '#000000', 
+                  fontWeight: '700', 
+                  marginBottom: '8px',
+                  fontSize: '1rem',
+                  opacity: '1'
+                }}>
+                  Contact Number <span style={{ color: '#dc2626' }}>*</span>
+                </h6>
                 <Form.Control
                   type="text"
-                  placeholder="Enter your contact number"
+                  placeholder="Enter your mobile number (e.g., 09123456789)"
                   name="contactNumber"
                   value={customerInfo.contactNumber}
                   onChange={handleInputChange}
-                  required
+                  isInvalid={!!formErrors.contactNumber}
                   className="form-control-dark"
                 />
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.contactNumber}
+                </Form.Control.Feedback>
               </Form.Group>
             </Form>
             
@@ -1104,7 +1234,11 @@ const ProductCatalog = () => {
             <Button variant="secondary" onClick={() => setShowCheckoutModal(false)}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleModalCheckout}>
+            <Button 
+              variant="primary" 
+              onClick={handleModalCheckout}
+              disabled={loading}
+            >
               {loading ? <ButtonSpinner /> : 'Confirm Order'}
             </Button>
           </Modal.Footer>

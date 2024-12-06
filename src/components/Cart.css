@@ -382,3 +382,83 @@
 .quantity-btn.success {
   animation: successPulse 0.8s ease-out;
 }
+
+/* Dark Mode Styles */
+body.dark-mode .cart-sidebar {
+  background-color: var(--background-dark);
+  border-left: 1px solid var(--border-dark);
+}
+
+body.dark-mode .cart-header {
+  background: var(--card-bg-dark);
+  border-bottom-color: var(--border-dark);
+}
+
+body.dark-mode .cart-header .offcanvas-title {
+  color: var(--text-primary-dark);
+}
+
+body.dark-mode .cart-item-card {
+  background: var(--card-bg-dark);
+  border-color: var(--border-dark);
+}
+
+body.dark-mode .item-title {
+  color: var(--text-primary-dark);
+}
+
+body.dark-mode .item-price {
+  color: var(--text-primary-dark);
+}
+
+body.dark-mode .quantity {
+  color: var(--text-primary-dark);
+}
+
+body.dark-mode .cart-footer {
+  background: var(--card-bg-dark);
+  border-top-color: var(--border-dark);
+}
+
+body.dark-mode .cart-total {
+  background: var(--card-bg-dark);
+  border-color: var(--border-dark);
+}
+
+body.dark-mode .cart-total strong {
+  color: var(--text-primary-dark);
+}
+
+body.dark-mode .empty-cart {
+  color: var(--text-secondary-dark);
+}
+
+body.dark-mode .empty-cart svg {
+  color: var(--text-secondary-dark);
+}
+
+/* Dark mode scrollbar */
+body.dark-mode .cart-items::-webkit-scrollbar-track {
+  background: var(--card-bg-dark);
+}
+
+body.dark-mode .cart-items::-webkit-scrollbar-thumb {
+  background: var(--border-dark);
+}
+
+body.dark-mode .cart-items::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary-dark);
+}
+
+/* Dark mode hover effects */
+body.dark-mode .cart-item-card:hover {
+  box-shadow: 0 4px 12px var(--shadow-dark);
+}
+
+body.dark-mode .quantity-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+body.dark-mode .remove-button:hover:not(:disabled) {
+  background: #dc2626;
+}

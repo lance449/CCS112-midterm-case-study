@@ -60,13 +60,11 @@ body.dark-mode .product-card {
 }
 
 .search-filter-container {
-  background-color: var(--card-bg-light);
-  border-radius: 1rem;
-  padding: 1.5rem;
   margin-bottom: 2rem;
-  box-shadow: var(--card-shadow);
-  border: 1px solid var(--border-light);
-  transition: all 0.3s ease;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 body.dark-mode .search-filter-container {
@@ -74,44 +72,50 @@ body.dark-mode .search-filter-container {
   border-color: var(--border-dark);
 }
 
-.category-select {
-  background-color: var(--card-bg-light);
-  color: var(--text-primary-light);
-  border: 1px solid var(--border-light);
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  width: 100%;
-  transition: all 0.3s ease;
+.category-select,
+.sort-select {
+  min-width: 200px;
+  padding: 0.5rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #2D3748;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-body.dark-mode .category-select {
+body.dark-mode .category-select,
+body.dark-mode .sort-select {
   background-color: var(--card-bg-dark);
   color: var(--text-primary-dark);
   border-color: var(--border-dark);
 }
 
-body.dark-mode .category-select option {
-  background-color: var(--card-bg-dark);
-  color: var(--text-primary-dark);
+.category-select:hover,
+.sort-select:hover {
+  border-color: #CBD5E0;
 }
 
-.category-select:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+.category-select:focus,
+.sort-select:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
 }
 
-body.dark-mode .search-filter-container {
-  background-color: var(--container-bg);
-}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filter-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
-body.dark-mode .category-select {
-  background-color: var(--card-bg);
-  color: var(--text-primary);
-}
-
-body.dark-mode .category-select option {
-  background-color: var(--card-bg);
-  color: var(--text-primary);
+  .category-select,
+  .sort-select {
+    width: 100%;
+    min-width: unset;
+  }
 }
 
 .cart-sidebar {
@@ -206,6 +210,7 @@ body.dark-mode .form-select {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 768px) {
