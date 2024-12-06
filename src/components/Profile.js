@@ -95,13 +95,15 @@ const Profile = () => {
 
   return (
     <Container className="profile-container mt-5 pt-4">
-      <Button 
-        className="back-button mb-3"
-        onClick={handleBack}
-      >
-        <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
-        Back to Products
-      </Button>
+      <div className="button-wrapper">
+        <Button 
+          className="back-button mb-3"
+          onClick={handleBack}
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
+          <span>Back to Products</span>
+        </Button>
+      </div>
 
       <Card className="profile-card">
         <Card.Header as="h4" className="text-center">
@@ -202,22 +204,26 @@ const Profile = () => {
               </div>
             )}
 
-            <div className="d-flex justify-content-between mt-4">
+            <div className="button-wrapper d-flex justify-content-between mt-4">
               {!isEditing ? (
                 <Button variant="primary" onClick={() => setIsEditing(true)} className="action-button">
                   <FontAwesomeIcon icon={faEdit} className="me-2" />
-                  Edit Profile
+                  <span>Edit Profile</span>
                 </Button>
               ) : (
                 <>
-                  <Button variant="outline-secondary" onClick={() => setIsEditing(false)} className="action-button">
-                    <FontAwesomeIcon icon={faTimes} className="me-2" />
-                    Cancel
-                  </Button>
-                  <Button variant="success" type="submit" className="action-button">
-                    <FontAwesomeIcon icon={faSave} className="me-2" />
-                    Save Changes
-                  </Button>
+                  <div className="button-wrapper">
+                    <Button variant="outline-secondary" onClick={() => setIsEditing(false)} className="action-button">
+                      <FontAwesomeIcon icon={faTimes} className="me-2" />
+                      <span>Cancel</span>
+                    </Button>
+                  </div>
+                  <div className="button-wrapper">
+                    <Button variant="success" type="submit" className="action-button">
+                      <FontAwesomeIcon icon={faSave} className="me-2" />
+                      <span>Save Changes</span>
+                    </Button>
+                  </div>
                 </>
               )}
             </div>

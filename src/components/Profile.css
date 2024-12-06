@@ -35,28 +35,34 @@
 
 .form-label {
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff !important;
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
+  background: transparent;
 }
 
-.form-input {
+.form-input,
+.form-control {
   border: 2px solid #e2e8f0;
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
   transition: all 0.3s ease;
   font-size: 1rem;
-  background-color: #f8fafc;
+  background-color: #2d3748 !important;
+  color: #ffffff !important;
+  border-color: #4a5568;
 }
 
-.form-input:focus {
-  border-color: #2b6cb0;
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
-  background-color: #ffffff;
+.form-input:focus,
+.form-control:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+  background-color: #2d3748 !important;
 }
 
-.form-input:disabled {
-  background-color: #f1f5f9;
+.form-input:disabled,
+.form-control:disabled {
+  background-color: #1a202c !important;
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -64,14 +70,15 @@
 .password-section {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 2px solid #f0f2f5;
+  border-top: 2px solid #4a5568;
 }
 
 .section-title {
-  color: #2d3748;
+  color: #ffffff !important;
   font-weight: 600;
   margin-bottom: 1.5rem;
   font-size: 1.25rem;
+  background: transparent;
 }
 
 .password-input-wrapper {
@@ -83,7 +90,7 @@
   right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #718096;
+  color: #ffffff !important;
   padding: 0.25rem;
   background: none;
   border: none;
@@ -91,7 +98,7 @@
 }
 
 .password-toggle:hover {
-  color: #2b6cb0;
+  color: #4299e1 !important;
 }
 
 .action-button {
@@ -272,4 +279,162 @@ body.dark-mode .form-input {
   background-color: var(--primary-bg);
   color: var(--text-primary);
   border-color: var(--border-color);
+}
+
+/* Button wrapper to prevent layout shifts */
+.button-wrapper {
+  padding: 4px;
+  margin: 0;
+  display: inline-block;
+}
+
+/* Base button styles */
+.back-button,
+.action-button {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  will-change: transform;
+}
+
+/* Icon styles */
+.back-button svg,
+.action-button svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Text span */
+.back-button span,
+.action-button span {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Back button styles */
+.back-button {
+  background-color: #6c757d;
+  border: 1px solid #6c757d;
+  color: #ffffff;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+}
+
+/* Action button variants */
+.action-button.btn-primary {
+  background-color: #2b6cb0;
+  border: 1px solid #2b6cb0;
+  color: #ffffff;
+}
+
+.action-button.btn-primary:hover {
+  background-color: #2c5282;
+  border-color: #2c5282;
+}
+
+.action-button.btn-success {
+  background-color: #38a169;
+  border: 1px solid #38a169;
+  color: #ffffff;
+}
+
+.action-button.btn-success:hover {
+  background-color: #2f855a;
+  border-color: #2f855a;
+}
+
+.action-button.btn-outline-secondary {
+  background-color: transparent;
+  border: 1px solid #718096;
+  color: #718096;
+}
+
+.action-button.btn-outline-secondary:hover {
+  background-color: #718096;
+  color: #ffffff;
+}
+
+/* Focus styles */
+.back-button:focus,
+.action-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+/* Dark mode styles */
+body.dark-mode .back-button {
+  background-color: #4a5568;
+  border-color: #4a5568;
+  color: #ffffff;
+}
+
+body.dark-mode .back-button:hover {
+  background-color: #2d3748;
+  border-color: #2d3748;
+}
+
+body.dark-mode .action-button.btn-primary {
+  background-color: #4299e1;
+  border-color: #4299e1;
+}
+
+body.dark-mode .action-button.btn-primary:hover {
+  background-color: #3182ce;
+  border-color: #3182ce;
+}
+
+body.dark-mode .action-button.btn-success {
+  background-color: #48bb78;
+  border-color: #48bb78;
+}
+
+body.dark-mode .action-button.btn-success:hover {
+  background-color: #38a169;
+  border-color: #38a169;
+}
+
+body.dark-mode .action-button.btn-outline-secondary {
+  border-color: #a0aec0;
+  color: #a0aec0;
+}
+
+body.dark-mode .action-button.btn-outline-secondary:hover {
+  background-color: #a0aec0;
+  color: #1a202c;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .button-wrapper {
+    display: block;
+    width: 100%;
+  }
+
+  .back-button,
+  .action-button {
+    width: 100%;
+  }
+
+  .d-flex {
+    gap: 8px;
+  }
 }

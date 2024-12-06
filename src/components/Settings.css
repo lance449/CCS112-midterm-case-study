@@ -70,20 +70,103 @@
   font-size: 0.95rem;
 }
 
-.settings-save-button {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
+.settings-save-button,
+.back-button {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: 14px;
   font-weight: 500;
-  transition: all 0.3s ease;
-  background-color: #38a169;
-  border-color: #38a169;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  will-change: transform;
 }
 
-.settings-save-button:hover {
+.settings-save-button svg,
+.back-button svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.settings-save-button span,
+.back-button span {
+  display: inline-block;
+  line-height: 1;
+}
+
+.settings-save-button:not(.dark-button) {
+  background-color: #28a745;
+  border: 1px solid #28a745;
+  color: #ffffff;
+}
+
+.settings-save-button:not(.dark-button):hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.settings-save-button.dark-button {
+  background-color: #4299e1;
+  border: 1px solid #4299e1;
+  color: #ffffff;
+}
+
+.settings-save-button.dark-button:hover {
+  background-color: #3182ce;
+  border-color: #3182ce;
+}
+
+.back-button:not(.dark-mode) {
+  background-color: #6c757d;
+  border: 1px solid #6c757d;
+  color: #ffffff;
+}
+
+.back-button:not(.dark-mode):hover {
+  background-color: #5a6268;
+  border-color: #545b62;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(56, 161, 105, 0.2);
-  background-color: #2f855a;
-  border-color: #2f855a;
+}
+
+.back-button.dark-mode {
+  background-color: #4a5568;
+  border: 1px solid #4a5568;
+  color: #ffffff;
+}
+
+.back-button.dark-mode:hover {
+  background-color: #2d3748;
+  border-color: #2d3748;
+  transform: translateY(-1px);
+}
+
+.settings-save-button:focus,
+.back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+.settings-save-button svg,
+.back-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.d-flex.justify-content-end {
+  padding: 8px;
+  margin-top: 16px;
 }
 
 .alert {
@@ -101,4 +184,509 @@
 .alert-danger {
   background-color: #f8d7da;
   color: #721c24;
+}
+
+/* Dark mode styles */
+.settings-container.dark-mode {
+  background-color: #1a202c;
+  color: #e2e8f0;
+}
+
+.settings-card.dark-mode {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+
+.settings-card.dark-mode .dark-header {
+  background-color: #2c5282;
+  color: #e2e8f0;
+  border-bottom: 1px solid #4a5568;
+}
+
+.settings-card.dark-mode .dark-body {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark-label {
+  color: #e2e8f0 !important;
+}
+
+.dark-switch {
+  color: #e2e8f0;
+}
+
+.dark-switch .form-check-input {
+  background-color: #4a5568;
+  border-color: #718096;
+}
+
+.dark-switch .form-check-input:checked {
+  background-color: #4299e1;
+  border-color: #4299e1;
+}
+
+.dark-select {
+  background-color: #4a5568 !important;
+  color: #e2e8f0 !important;
+  border-color: #718096 !important;
+}
+
+.dark-select option {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+/* Add hover effects for dark mode */
+.dark-switch:hover {
+  opacity: 0.9;
+}
+
+.dark-select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(66, 153, 225, 0.25);
+}
+
+/* Add these styles to fix the white background labels */
+.settings-card.dark-mode .form-check-label {
+  color: #e2e8f0;
+  background: transparent;
+}
+
+/* Style for the section labels (Notifications, Email Updates, etc.) */
+.settings-label {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Dark mode specific styles for labels */
+.settings-card.dark-mode .settings-label {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+/* Style for the switch labels */
+.settings-card.dark-mode .form-switch {
+  padding-left: 2.5em;
+}
+
+.settings-card.dark-mode .form-switch .form-check-label {
+  color: #e2e8f0;
+  background: transparent;
+  padding: 4px 8px;
+}
+
+/* Style for the language select background */
+.settings-card.dark-mode .form-select {
+  background-color: #2d3748;
+  color: #e2e8f0;
+  border-color: #4a5568;
+}
+
+/* Fix for any white backgrounds in form elements */
+.settings-card.dark-mode .form-control,
+.settings-card.dark-mode .form-select,
+.settings-card.dark-mode .form-check-input {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+/* Ensure text labels have transparent backgrounds */
+.settings-card.dark-mode label {
+  background: transparent !important;
+}
+
+/* Style for the section headers */
+.settings-card.dark-mode h4 {
+  color: #e2e8f0;
+  background: transparent;
+}
+
+/* Make text visible in dark mode */
+.settings-card.dark-mode .form-check-label {
+  color: #ffffff !important; /* Bright white for better visibility */
+}
+
+.settings-card.dark-mode .settings-label {
+  color: #ffffff !important;
+  background-color: transparent;
+  font-weight: 600; /* Make headers more visible */
+}
+
+/* Style for switches in dark mode */
+.settings-card.dark-mode .form-switch {
+  padding-left: 2.5em;
+}
+
+.settings-card.dark-mode .form-switch .form-check-input {
+  background-color: #4a5568;
+  border-color: #718096;
+}
+
+.settings-card.dark-mode .form-switch .form-check-input:checked {
+  background-color: #4299e1;
+  border-color: #4299e1;
+}
+
+/* Language select styling */
+.settings-card.dark-mode .form-select {
+  background-color: #4a5568;
+  color: #ffffff;
+  border-color: #718096;
+}
+
+.settings-card.dark-mode .form-select option {
+  background-color: #2d3748;
+  color: #ffffff;
+}
+
+/* Section headers */
+.settings-card.dark-mode .card-header {
+  background-color: #2c5282;
+  color: #ffffff;
+  border-bottom: 1px solid #4a5568;
+}
+
+/* Form labels and text */
+.settings-card.dark-mode label,
+.settings-card.dark-mode .form-check-label {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+/* Hover states */
+.settings-card.dark-mode .form-check:hover .form-check-label {
+  opacity: 1;
+}
+
+/* Make sure switch text is visible */
+.settings-card.dark-mode .form-switch .form-check-label {
+  padding-left: 8px;
+  font-weight: normal;
+}
+
+/* Ensure English dropdown text is visible */
+.settings-card.dark-mode .form-select {
+  color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* Button wrapper to prevent layout shifts */
+.button-wrapper {
+  padding: 4px;
+  margin: 0;
+  display: inline-block;
+}
+
+/* Base button styles */
+.settings-save-button,
+.back-button {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  will-change: transform;
+}
+
+/* Icon styles */
+.settings-save-button svg,
+.back-button svg {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Text span */
+.settings-save-button span,
+.back-button span {
+  display: inline-block;
+  line-height: 1;
+}
+
+/* Light mode styles */
+.settings-save-button:not(.dark-button) {
+  background-color: #28a745;
+  border: 1px solid #28a745;
+  color: #ffffff;
+}
+
+.settings-save-button:not(.dark-button):hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+/* Dark mode styles */
+.settings-save-button.dark-button {
+  background-color: #4299e1;
+  border: 1px solid #4299e1;
+  color: #ffffff;
+}
+
+.settings-save-button.dark-button:hover {
+  background-color: #3182ce;
+  border-color: #3182ce;
+}
+
+/* Back button light mode */
+.back-button:not(.dark-mode) {
+  background-color: #6c757d;
+  border: 1px solid #6c757d;
+  color: #ffffff;
+}
+
+.back-button:not(.dark-mode):hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+  transform: translateY(-1px);
+}
+
+.back-button.dark-mode {
+  background-color: #4a5568;
+  border: 1px solid #4a5568;
+  color: #ffffff;
+}
+
+.back-button.dark-mode:hover {
+  background-color: #2d3748;
+  border-color: #2d3748;
+  transform: translateY(-1px);
+}
+
+.settings-save-button:focus,
+.back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+.settings-save-button svg,
+.back-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.d-flex.justify-content-end {
+  padding: 8px;
+  margin-top: 16px;
+}
+
+.alert {
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  border: none;
+}
+
+.alert-success {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Dark mode styles */
+.settings-container.dark-mode {
+  background-color: #1a202c;
+  color: #e2e8f0;
+}
+
+.settings-card.dark-mode {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+
+.settings-card.dark-mode .dark-header {
+  background-color: #2c5282;
+  color: #e2e8f0;
+  border-bottom: 1px solid #4a5568;
+}
+
+.settings-card.dark-mode .dark-body {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark-label {
+  color: #e2e8f0 !important;
+}
+
+.dark-switch {
+  color: #e2e8f0;
+}
+
+.dark-switch .form-check-input {
+  background-color: #4a5568;
+  border-color: #718096;
+}
+
+.dark-switch .form-check-input:checked {
+  background-color: #4299e1;
+  border-color: #4299e1;
+}
+
+.dark-select {
+  background-color: #4a5568 !important;
+  color: #e2e8f0 !important;
+  border-color: #718096 !important;
+}
+
+.dark-select option {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+/* Add hover effects for dark mode */
+.dark-switch:hover {
+  opacity: 0.9;
+}
+
+.dark-select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(66, 153, 225, 0.25);
+}
+
+/* Add these styles to fix the white background labels */
+.settings-card.dark-mode .form-check-label {
+  color: #e2e8f0;
+  background: transparent;
+}
+
+/* Style for the section labels (Notifications, Email Updates, etc.) */
+.settings-label {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Dark mode specific styles for labels */
+.settings-card.dark-mode .settings-label {
+  background-color: #2d3748;
+  color: #e2e8f0;
+}
+
+/* Style for the switch labels */
+.settings-card.dark-mode .form-switch {
+  padding-left: 2.5em;
+}
+
+.settings-card.dark-mode .form-switch .form-check-label {
+  color: #e2e8f0;
+  background: transparent;
+  padding: 4px 8px;
+}
+
+/* Style for the language select background */
+.settings-card.dark-mode .form-select {
+  background-color: #2d3748;
+  color: #e2e8f0;
+  border-color: #4a5568;
+}
+
+/* Fix for any white backgrounds in form elements */
+.settings-card.dark-mode .form-control,
+.settings-card.dark-mode .form-select,
+.settings-card.dark-mode .form-check-input {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+/* Ensure text labels have transparent backgrounds */
+.settings-card.dark-mode label {
+  background: transparent !important;
+}
+
+/* Style for the section headers */
+.settings-card.dark-mode h4 {
+  color: #e2e8f0;
+  background: transparent;
+}
+
+/* Make text visible in dark mode */
+.settings-card.dark-mode .form-check-label {
+  color: #ffffff !important; /* Bright white for better visibility */
+}
+
+.settings-card.dark-mode .settings-label {
+  color: #ffffff !important;
+  background-color: transparent;
+  font-weight: 600; /* Make headers more visible */
+}
+
+/* Style for switches in dark mode */
+.settings-card.dark-mode .form-switch {
+  padding-left: 2.5em;
+}
+
+.settings-card.dark-mode .form-switch .form-check-input {
+  background-color: #4a5568;
+  border-color: #718096;
+}
+
+.settings-card.dark-mode .form-switch .form-check-input:checked {
+  background-color: #4299e1;
+  border-color: #4299e1;
+}
+
+/* Language select styling */
+.settings-card.dark-mode .form-select {
+  background-color: #4a5568;
+  color: #ffffff;
+  border-color: #718096;
+}
+
+.settings-card.dark-mode .form-select option {
+  background-color: #2d3748;
+  color: #ffffff;
+}
+
+/* Section headers */
+.settings-card.dark-mode .card-header {
+  background-color: #2c5282;
+  color: #ffffff;
+  border-bottom: 1px solid #4a5568;
+}
+
+/* Form labels and text */
+.settings-card.dark-mode label,
+.settings-card.dark-mode .form-check-label {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+/* Hover states */
+.settings-card.dark-mode .form-check:hover .form-check-label {
+  opacity: 1;
+}
+
+/* Make sure switch text is visible */
+.settings-card.dark-mode .form-switch .form-check-label {
+  padding-left: 8px;
+  font-weight: normal;
+}
+
+/* Ensure English dropdown text is visible */
+.settings-card.dark-mode .form-select {
+  color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 } 

@@ -10,7 +10,10 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    if (darkMode) {
+    const isAuthPage = window.location.pathname.includes('/login') || 
+                      window.location.pathname.includes('/signup');
+    
+    if (darkMode && !isAuthPage) {
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');

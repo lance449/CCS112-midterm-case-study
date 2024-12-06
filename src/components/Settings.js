@@ -32,8 +32,6 @@ const Settings = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Here you would typically save settings to your backend
-      // await settingsService.updateSettings(settings);
       setSuccess('Settings updated successfully');
       setError('');
     } catch (error) {
@@ -47,65 +45,78 @@ const Settings = () => {
   };
 
   return (
-    <Container className="settings-container mt-5 pt-4">
-      <Button 
-        className="back-button mb-3"
-        onClick={handleBack}
-      >
-        <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
-        Back to Products
-      </Button>
+    <Container className={`settings-container mt-5 pt-4 ${darkMode ? 'dark-mode' : ''}`}>
+      <div className="button-wrapper">
+        <Button 
+          className={`back-button mb-3 ${darkMode ? 'dark-mode' : ''}`}
+          onClick={handleBack}
+        >
+          <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
+          <span>Back to Products</span>
+        </Button>
+      </div>
 
-      <Card className="settings-card">
-        <Card.Header as="h4" className="text-center">
+      <Card className={`settings-card ${darkMode ? 'dark-mode' : ''}`}>
+        <Card.Header as="h4" className={`text-center ${darkMode ? 'dark-header' : ''}`}>
           <FontAwesomeIcon icon={faCog} className="me-2" />
           Settings
         </Card.Header>
-        <Card.Body>
+        <Card.Body className={darkMode ? 'dark-body' : ''}>
           {error && <Alert variant="danger">{error}</Alert>}
           {success && <Alert variant="success">{success}</Alert>}
 
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-4">
-              <Form.Label className="settings-label">Notifications</Form.Label>
+              <Form.Label className={`settings-label ${darkMode ? 'dark-label' : ''}`}>
+                Notifications
+              </Form.Label>
               <Form.Check
                 type="switch"
                 name="notifications"
                 checked={settings.notifications}
                 onChange={handleChange}
                 label="Enable push notifications"
+                className={darkMode ? 'dark-switch' : ''}
               />
             </Form.Group>
 
             <Form.Group className="mb-4">
-              <Form.Label className="settings-label">Email Updates</Form.Label>
+              <Form.Label className={`settings-label ${darkMode ? 'dark-label' : ''}`}>
+                Email Updates
+              </Form.Label>
               <Form.Check
                 type="switch"
                 name="emailUpdates"
                 checked={settings.emailUpdates}
                 onChange={handleChange}
                 label="Receive email updates about orders and promotions"
+                className={darkMode ? 'dark-switch' : ''}
               />
             </Form.Group>
 
             <Form.Group className="mb-4">
-              <Form.Label className="settings-label">Theme</Form.Label>
+              <Form.Label className={`settings-label ${darkMode ? 'dark-label' : ''}`}>
+                Theme
+              </Form.Label>
               <Form.Check
                 type="switch"
                 name="darkMode"
                 checked={darkMode}
                 onChange={handleChange}
                 label="Dark mode"
+                className={darkMode ? 'dark-switch' : ''}
               />
             </Form.Group>
 
             <Form.Group className="mb-4">
-              <Form.Label className="settings-label">Language</Form.Label>
+              <Form.Label className={`settings-label ${darkMode ? 'dark-label' : ''}`}>
+                Language
+              </Form.Label>
               <Form.Select
                 name="language"
                 value={settings.language}
                 onChange={handleChange}
-                className="settings-select"
+                className={`settings-select ${darkMode ? 'dark-select' : ''}`}
               >
                 <option value="english">English</option>
                 <option value="spanish">Spanish</option>
@@ -113,10 +124,14 @@ const Settings = () => {
               </Form.Select>
             </Form.Group>
 
-            <div className="d-flex justify-content-end">
-              <Button variant="success" type="submit" className="settings-save-button">
+            <div className="button-wrapper d-flex justify-content-end">
+              <Button 
+                variant={darkMode ? "outline-light" : "success"} 
+                type="submit" 
+                className={`settings-save-button ${darkMode ? 'dark-button' : ''}`}
+              >
                 <FontAwesomeIcon icon={faSave} className="me-2" />
-                Save Changes
+                <span>Save Changes</span>
               </Button>
             </div>
           </Form>
