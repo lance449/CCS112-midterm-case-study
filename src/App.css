@@ -40,3 +40,37 @@
   }
 }
 
+/* Add these global form styles */
+.form-control {
+  transition: all 0.3s ease;
+}
+
+/* Light mode defaults */
+.form-control {
+  background-color: #ffffff;
+  color: #2d3748;
+  border: 1px solid #e2e8f0;
+}
+
+/* Dark mode overrides */
+body.dark-mode .form-control {
+  background-color: #2d3748;
+  color: #ffffff;
+  border-color: #4a5568;
+}
+
+/* Remove any conflicting styles */
+.form-control:not([type="file"]) {
+  background-color: inherit;
+  color: inherit;
+}
+
+/* Ensure proper transitions */
+.theme-transition,
+.form-control,
+.form-label,
+.input-group,
+.form-group {
+  transition: all 0.3s ease;
+}
+

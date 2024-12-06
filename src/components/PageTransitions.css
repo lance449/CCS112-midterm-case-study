@@ -64,3 +64,13 @@ body {
   transform: translateY(-20px);
   transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
 }
+
+/* Add to your existing CSS */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Apply to components that switch between light/dark mode */
+.dark-mode-component {
+  transition: all 0.3s ease;
+}

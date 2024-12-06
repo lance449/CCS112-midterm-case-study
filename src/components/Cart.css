@@ -1,142 +1,13 @@
 .cart-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
-.item-details {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.quantity-controls {
-  display: flex;
-  align-items: center;
-}
-
-.quantity-controls button {
-  background-color: #f0f0f0;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-  margin: 0 5px;
-}
-
-.remove-btn {
-  background-color: #ff4d4d;
-  border: none;
-  color: white;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-.cart-total {
-  text-align: right;
-  padding: 10px;
-  font-weight: bold;
-}
-
-.checkout-btn {
-  width: 100%;
-  margin-top: 10px;
-}
-
-.quantity-btn {
-  background-color: #f0f0f0;
-  border: none;
-  padding: 5px 12px;
-  cursor: pointer;
-  margin: 0 5px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.quantity-btn:hover {
-  background-color: #e0e0e0;
-}
-
-.quantity-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.quantity-display {
-  min-width: 30px;
-  text-align: center;
-  font-weight: bold;
-}
-
-.item-total {
-  min-width: 80px;
-  text-align: right;
-  font-weight: bold;
-}
-
-.cart-sidebar {
-  width: 400px !important;
-}
-
-.cart-header {
-  border-bottom: 2px solid #eee;
-  padding: 1rem;
-}
-
-.cart-body {
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.empty-cart {
-  text-align: center;
-  padding: 2rem;
-  color: #6c757d;
-}
-
-.cart-items {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem;
-}
-
-.cart-item-card {
-  display: flex;
   align-items: center;
   padding: 1rem;
-  border-bottom: 1px solid #eee;
-  position: relative;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.item-image {
-  width: 80px;
-  height: 80px;
-  margin-right: 1rem;
-}
-
-.item-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.item-details {
-  flex: 1;
-}
-
-.item-title {
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.item-price {
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
+.cart-item-title {
+  color: #2d3748;
+  font-weight: 500;
 }
 
 .quantity-controls {
@@ -145,23 +16,99 @@
   gap: 0.5rem;
 }
 
-.quantity {
-  min-width: 40px;
+.quantity-btn {
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  color: #2d3748;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.quantity-btn:hover {
+  background-color: #edf2f7;
+}
+
+.cart-total {
+  font-weight: 600;
+  color: #2d3748;
+  margin-top: 1rem;
+  text-align: right;
+}
+
+/* Dark Mode Styles */
+body.dark-mode .cart-item {
+  border-bottom-color: #4a5568;
+}
+
+body.dark-mode .cart-item-title {
+  color: #ffffff;
+}
+
+body.dark-mode .quantity-btn {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: #ffffff;
+}
+
+body.dark-mode .quantity-btn:hover {
+  background-color: #4a5568;
+}
+
+body.dark-mode .cart-total {
+  color: #ffffff;
+}
+
+/* Proceed to Checkout Button */
+.checkout-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #4299e1;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.checkout-btn:hover {
+  background-color: #3182ce;
+}
+
+/* Cart Item Counter */
+.cart-counter {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #2d3748;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.375rem;
+  min-width: 2.5rem;
   text-align: center;
 }
 
-.remove-item {
-  color: #dc3545;
-  padding: 0.5rem;
+body.dark-mode .cart-counter {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: #ffffff;
 }
 
-.cart-footer {
-  padding: 1rem;
-  border-top: 2px solid #eee;
-  background: #f8f9fa;
+/* Delete Button */
+.delete-btn {
+  color: #e53e3e;
+  background: transparent;
+  border: none;
+  padding: 0.25rem;
+  transition: all 0.2s ease;
 }
 
-.checkout-button {
-  width: 100%;
-  padding: 0.75rem;
+.delete-btn:hover {
+  color: #c53030;
+}
+
+body.dark-mode .delete-btn {
+  color: #fc8181;
+}
+
+body.dark-mode .delete-btn:hover {
+  color: #feb2b2;
 }

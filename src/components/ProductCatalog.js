@@ -319,19 +319,40 @@ const ProductCatalog = () => {
 
   const addToCart = async (product) => {
     try {
+      setIsUpdatingCart(true);
       const response = await axios.post(`${API_URL}/api/cart`, {
         product_id: product.id,
         quantity: 1,
         is_new: true
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Accept': 'application/json'
+        }
       });
 
       if (response.data) {
         await fetchCartItems();
-        toast.success('Item added to cart');
+        toast.success('🛒 Item added to cart successfully!', {
+          duration: 2000,
+          position: 'top-right',
+          style: {
+            background: '#4f46e5',
+            color: '#ffffff',
+            padding: '16px',
+            borderRadius: '8px',
+          },
+          icon: '🛒'
+        });
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart');
+      toast.error('Failed to add item to cart. Please try again.', {
+        duration: 3000,
+        position: 'top-right',
+      });
+    } finally {
+      setIsUpdatingCart(false);
     }
   };
 
@@ -541,24 +562,27 @@ const ProductCatalog = () => {
 
   const handleModalCheckout = async () => {
     try {
+      // Show loading toast
+      const loadingToast = toast.loading('Processing your order...', {
+        position: 'top-center'
+      });
+
       const token = localStorage.getItem('token');
       
-      // Validate required fields
       if (!customerInfo.name || !customerInfo.address || !customerInfo.paymentMode || !customerInfo.contactNumber) {
         toast.error('Please fill in all required fields');
+        toast.dismiss(loadingToast);
         return;
       }
 
-      console.log('Sending order request...'); // Debug log
-
       const response = await axios.post(
-        `${API_URL}/api/orders`, // Changed to match OrderController's store endpoint
+        `${API_URL}/api/orders`,
         {
           customer_name: customerInfo.name,
           shipping_address: customerInfo.address,
           payment_method: customerInfo.paymentMode,
           contact_number: customerInfo.contactNumber,
-          items: cart.map(item => ({  // Changed from cart_items to items to match OrderController
+          items: cart.map(item => ({
             product_id: item.product.id,
             quantity: item.quantity,
             price: item.product.price
@@ -575,28 +599,54 @@ const ProductCatalog = () => {
       );
 
       if (response.data.success) {
-        toast.success('Order placed successfully!');
-        setShowCheckoutModal(false);
-        setCart([]); // Clear the cart
+        // Dismiss loading toast
+        toast.dismiss(loadingToast);
         
-        // Reset customer info
+        // Show success toast with order details
+        toast.success(
+          <div>
+            <h4>Order Placed Successfully! 🎉</h4>
+            <p>Thank you for your purchase!</p>
+            <small>Order Total: ${formatPrice(calculateTotal())}</small>
+          </div>,
+          {
+            duration: 5000,
+            position: 'top-center',
+            style: {
+              background: '#10B981',
+              color: '#ffffff',
+              padding: '16px',
+              borderRadius: '8px',
+              minWidth: '300px'
+            }
+          }
+        );
+
+        setShowCheckoutModal(false);
+        setCart([]);
         setCustomerInfo({
           name: '',
           address: '',
           paymentMode: '',
           contactNumber: ''
         });
-
-        // Refresh the products list
         await fetchProducts();
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      console.log('Request details:', {
-        url: `${API_URL}/api/orders`,
-        data: error.response?.data
-      });
-      toast.error(error.response?.data?.message || 'Failed to process checkout');
+      toast.error(
+        error.response?.data?.message || 'Failed to process checkout. Please try again.',
+        {
+          duration: 4000,
+          position: 'top-center',
+          style: {
+            background: '#EF4444',
+            color: '#ffffff',
+            padding: '16px',
+            borderRadius: '8px'
+          }
+        }
+      );
     }
   };
 

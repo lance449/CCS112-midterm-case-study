@@ -123,7 +123,7 @@ const Profile = () => {
                 value={profile.name}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="form-input"
+                className="form-control theme-transition"
               />
             </Form.Group>
 
@@ -135,7 +135,7 @@ const Profile = () => {
                     value={profile.email}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="form-input"
+                    className="form-control theme-transition"
                   />
                 </Form.Group>
 
@@ -150,7 +150,7 @@ const Profile = () => {
                           name="currentPassword"
                           value={profile.currentPassword}
                           onChange={handleInputChange}
-                          className="form-input"
+                          className="form-control theme-transition"
                         />
                         <Button
                           variant="link"
@@ -170,7 +170,7 @@ const Profile = () => {
                           name="newPassword"
                           value={profile.newPassword}
                           onChange={handleInputChange}
-                          className="form-input"
+                          className="form-control theme-transition"
                         />
                         <Button
                           variant="link"
@@ -190,7 +190,7 @@ const Profile = () => {
                       name="newPassword_confirmation"
                       value={profile.newPassword_confirmation}
                       onChange={handleInputChange}
-                      className="form-input"
+                      className="form-control theme-transition"
                     />
                     <Button
                       variant="link"

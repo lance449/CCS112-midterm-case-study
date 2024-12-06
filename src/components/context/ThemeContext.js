@@ -10,14 +10,28 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    const isAuthPage = window.location.pathname.includes('/login') || 
-                      window.location.pathname.includes('/signup');
     
-    if (darkMode && !isAuthPage) {
-      document.body.classList.add('dark-mode');
-    } else {
+    if (!darkMode) {
       document.body.classList.remove('dark-mode');
+      const darkElements = document.querySelectorAll('.dark-mode');
+      darkElements.forEach(element => {
+        element.classList.remove('dark-mode');
+      });
+    } else {
+      const isAuthPage = window.location.pathname.includes('/login') || 
+                        window.location.pathname.includes('/signup');
+      if (!isAuthPage) {
+        document.body.classList.add('dark-mode');
+      }
     }
+
+    return () => {
+      document.body.classList.remove('dark-mode');
+      const darkElements = document.querySelectorAll('.dark-mode');
+      darkElements.forEach(element => {
+        element.classList.remove('dark-mode');
+      });
+    };
   }, [darkMode]);
 
   const toggleDarkMode = () => {

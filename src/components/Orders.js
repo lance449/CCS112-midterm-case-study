@@ -97,7 +97,7 @@ const Orders = () => {
   }
 
   return (
-    <div className={`order-history-container ${darkMode ? 'dark-mode' : ''}`}>
+    <div className={`order-history-container theme-transition ${darkMode ? 'dark-mode' : ''}`}>
       <Container className="animate-fade-in">
         <div className={`order-card ${darkMode ? 'dark-mode' : ''}`}>
           <div className="header-container">
