@@ -38,6 +38,7 @@ import ErrorBoundary from './ErrorBoundary';
 import LoadingSpinner from './LoadingSpinner';
 import { formatPrice, calculateItemTotal, calculateCartTotal } from '../utils/priceFormatter';
 import { Spinner, PageSpinner, ButtonSpinner } from '../Spinner';
+import { notifySuccess, notifyError, notifyInfo, notifyWarning } from '../utils/notifications';
 
 // Create a CartContext
 export const CartContext = React.createContext();
@@ -312,25 +313,26 @@ const ProductCatalog = () => {
     }
   };
 
-  const handleQuantityChange = async (cartItem, newQuantity) => {
+  const handleQuantityChange = async (item, newQuantity) => {
     try {
       const quantity = parseInt(newQuantity);
       
       if (isNaN(quantity) || quantity < 1) {
-        toast.error('Please enter a valid quantity');
+        notifyWarning('Please enter a valid quantity');
         return;
       }
 
-      // Update UI immediately
+      // Update local cart state immediately without notification
       setCart(prevCart => 
-        prevCart.map(item => 
-          item.id === cartItem.id 
-            ? { ...item, quantity: quantity }
-            : item
+        prevCart.map(cartItem => 
+          cartItem.id === item.id 
+            ? { ...cartItem, quantity: quantity }
+            : cartItem
         )
       );
 
-      const response = await axios.put(`${API_URL}/api/cart/${cartItem.id}`, {
+      // Make API call silently without notification
+      const response = await axios.put(`${API_URL}/api/cart/${item.id}`, {
         quantity: quantity
       });
 
@@ -339,14 +341,9 @@ const ProductCatalog = () => {
         throw new Error('Invalid server response');
       }
 
-      toast.success('Cart updated!', {
-        duration: 1500,
-        icon: '🛒',
-      });
-
     } catch (error) {
       console.error('Update error:', error);
-      toast.error('Failed to update quantity');
+      notifyError('Failed to update quantity');
       await fetchCartItems();
     }
   };
@@ -356,20 +353,8 @@ const ProductCatalog = () => {
       setIsUpdatingCart(true);
       const newQuantity = item.quantity + 1;
       handleQuantityChange(item, newQuantity);
-
-      toast.success('Added one more!', {
-        duration: 1500,
-        icon: '➕',
-        style: {
-          background: '#333',
-          color: '#fff',
-        },
-      });
     } catch (error) {
-      toast.error('Failed to update quantity', {
-        duration: 3000,
-        icon: '❌',
-      });
+      notifyError('Failed to update quantity');
     } finally {
       setIsUpdatingCart(false);
     }
@@ -381,21 +366,9 @@ const ProductCatalog = () => {
       if (item.quantity > 1) {
         const newQuantity = item.quantity - 1;
         handleQuantityChange(item, newQuantity);
-
-        toast('Quantity decreased', {
-          duration: 1500,
-          icon: '➖',
-          style: {
-            background: '#333',
-            color: '#fff',
-          },
-        });
       }
     } catch (error) {
-      toast.error('Failed to update quantity', {
-        duration: 3000,
-        icon: '❌',
-      });
+      notifyError('Failed to update quantity');
     } finally {
       setIsUpdatingCart(false);
     }
@@ -417,17 +390,11 @@ const ProductCatalog = () => {
 
       if (response.data) {
         await fetchCartItems();
-        toast.success(`${product.description} added to cart!`, {
-          ...TOAST_STYLES.success,
-          icon: '🛍️',
-        });
+        notifySuccess(`${product.description} added to cart`);
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error(`Failed to add item: ${error.message}`, {
-        ...TOAST_STYLES.error,
-        icon: '❌',
-      });
+      notifyError(`Failed to add item: ${error.message}`);
     } finally {
       setIsUpdatingCart(false);
     }
@@ -435,12 +402,20 @@ const ProductCatalog = () => {
 
   const removeFromCart = async (productId) => {
     try {
-      await axios.delete(`http://localhost:8000/api/cart/${productId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_URL}/api/cart/${productId}`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
       });
       setCart(prevCart => prevCart.filter(item => item.id !== productId));
+      toast.success('Item removed from cart');
     } catch (error) {
       console.error('Error removing from cart:', error);
+      toast.error('Failed to remove item from cart');
     }
   };
 
@@ -640,16 +615,13 @@ const ProductCatalog = () => {
   const handleModalCheckout = async () => {
     try {
       setLoading(true);
-      const loadingToast = toast.loading('Processing your order...', {
-        ...TOAST_STYLES.info,
-        position: 'top-center'
-      });
+      const loadingToastId = notifyInfo('Processing your order...', { duration: null });
 
       const token = localStorage.getItem('token');
       
       if (!customerInfo.name || !customerInfo.address || !customerInfo.paymentMode || !customerInfo.contactNumber) {
-        toast.error('Please fill in all required fields');
-        toast.dismiss(loadingToast);
+        notifyWarning('Please fill in all required fields');
+        toast.dismiss(loadingToastId);
         return;
       }
 
@@ -677,20 +649,11 @@ const ProductCatalog = () => {
       );
 
       if (response.data.success) {
-        toast.dismiss(loadingToast);
+        toast.dismiss(loadingToastId);
         
-        toast.success(
-          <div>
-            <h4>Order Placed Successfully!</h4>
-            <p>Thank you for your purchase!</p>
-            <small>Order Total: ${formatPrice(calculateTotal())}</small>
-          </div>,
-          {
-            ...TOAST_STYLES.success,
-            duration: 5000,
-            position: 'top-center',
-          }
-        );
+        notifySuccess('Order placed successfully!', {
+          duration: 5000,
+        });
 
         setShowCheckoutModal(false);
         setCart([]);
@@ -703,21 +666,15 @@ const ProductCatalog = () => {
         await fetchProducts();
 
         setTimeout(() => {
-          toast('Check your order history for updates!', {
-            ...TOAST_STYLES.info,
-            icon: '📦',
+          notifyInfo('Check your order history for updates!', {
             duration: 4000,
           });
         }, 1000);
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      toast.error(
-        error.response?.data?.message || 'Failed to process checkout. Please try again.',
-        {
-          ...TOAST_STYLES.error,
-          position: 'top-center',
-        }
+      notifyError(
+        error.response?.data?.message || 'Failed to process checkout. Please try again.'
       );
     } finally {
       setLoading(false);
@@ -775,26 +732,27 @@ const ProductCatalog = () => {
   };
 
   // Add this function to handle item removal
-  const handleRemoveItem = async (cartItem) => {
+  const handleRemoveItem = async (itemId) => {
     try {
       setIsUpdatingCart(true);
-      const response = await axios.delete(`${API_URL}/api/cart/${cartItem.id}`);
+      const token = localStorage.getItem('token');
       
-      if (response.data) {
-        // Update local cart state
-        setCart(prevCart => prevCart.filter(item => item.id !== cartItem.id));
-        toast.success('Item removed from cart', {
-          icon: '🗑️',
-          duration: 2000,
-          style: {
-            background: '#333',
-            color: '#fff',
-          },
-        });
+      const response = await axios.delete(`${API_URL}/api/cart/${itemId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+
+      if (response.status === 200 || response.status === 204) {
+        setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+        notifySuccess('Item removed from cart');
       }
     } catch (error) {
       console.error('Error removing item:', error);
-      toast.error('Failed to remove item from cart');
+      notifyError('Failed to remove item from cart');
     } finally {
       setIsUpdatingCart(false);
     }
