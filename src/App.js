@@ -13,6 +13,7 @@ import Profile from './components/Profile';
 import Orders from './components/Orders';
 import Settings from './components/Settings';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Toaster } from 'react-hot-toast';
 
 function AppContent() {
   const location = useLocation();
@@ -79,9 +80,34 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <>
+      <Router>
+        <AppContent />
+      </Router>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          // Default options for all toasts
+          duration: 2000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 2000,
+            theme: {
+              primary: '#4aed88',
+            },
+          },
+          error: {
+            duration: 3000,
+            theme: {
+              primary: '#ff4b4b',
+            },
+          },
+        }}
+      />
+    </>
   );
 }
 

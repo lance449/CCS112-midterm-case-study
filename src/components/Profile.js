@@ -5,6 +5,7 @@ import { faUser, faEdit, faSave, faTimes, faEye, faEyeSlash, faArrowLeft } from 
 import { useNavigate } from 'react-router-dom';
 import userService from './services/userService';
 import './Profile.css';
+import { Spinner, PageSpinner, ButtonSpinner } from '../Spinner';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -86,11 +87,7 @@ const Profile = () => {
   };
 
   if (loading) {
-    return (
-      <Container className="profile-container mt-5 pt-4">
-        <div className="text-center">Loading...</div>
-      </Container>
-    );
+    return <PageSpinner />;
   }
 
   return (
@@ -220,9 +217,22 @@ const Profile = () => {
                     </Button>
                   </div>
                   <div className="button-wrapper">
-                    <Button variant="success" type="submit" className="action-button">
-                      <FontAwesomeIcon icon={faSave} className="me-2" />
-                      <span>Save Changes</span>
+                    <Button 
+                      variant="success" 
+                      type="submit" 
+                      className="action-button"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <ButtonSpinner /> Saving...
+                        </>
+                      ) : (
+                        <>
+                          <FontAwesomeIcon icon={faSave} className="me-2" />
+                          <span>Save Changes</span>
+                        </>
+                      )}
                     </Button>
                   </div>
                 </>

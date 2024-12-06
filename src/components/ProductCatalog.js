@@ -37,11 +37,51 @@ import { debounce } from 'lodash';
 import ErrorBoundary from './ErrorBoundary';
 import LoadingSpinner from './LoadingSpinner';
 import { formatPrice, calculateItemTotal, calculateCartTotal } from '../utils/priceFormatter';
+import { Spinner, PageSpinner, ButtonSpinner } from '../Spinner';
 
 // Create a CartContext
 export const CartContext = React.createContext();
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
+// Add these toast style constants at the top of the file
+const TOAST_STYLES = {
+  success: {
+    style: {
+      background: '#10B981',
+      color: '#ffffff',
+      padding: '16px',
+      borderRadius: '8px',
+      minWidth: '300px',
+      marginTop: '80px'
+    },
+    duration: 2000,
+    position: 'top-center'
+  },
+  error: {
+    style: {
+      background: '#EF4444',
+      color: '#ffffff',
+      padding: '16px',
+      borderRadius: '8px',
+      minWidth: '300px',
+      marginTop: '80px'
+    },
+    duration: 3000,
+    position: 'top-center'
+  },
+  info: {
+    style: {
+      background: '#333',
+      color: '#fff',
+      padding: '12px',
+      borderRadius: '8px',
+      marginTop: '80px'
+    },
+    duration: 1500,
+    position: 'top-center'
+  }
+};
 
 const MemoizedCartDisplay = React.memo(({ 
   showCart, 
@@ -162,6 +202,7 @@ const ProductCatalog = () => {
   const [loadingStates, setLoadingStates] = useState({});
   const [updatingQuantity, setUpdatingQuantity] = useState({});
   const [isUpdatingCart, setIsUpdatingCart] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -298,6 +339,11 @@ const ProductCatalog = () => {
         throw new Error('Invalid server response');
       }
 
+      toast.success('Cart updated!', {
+        duration: 1500,
+        icon: '🛒',
+      });
+
     } catch (error) {
       console.error('Update error:', error);
       toast.error('Failed to update quantity');
@@ -305,15 +351,53 @@ const ProductCatalog = () => {
     }
   };
 
-  const handleIncrement = (item) => {
-    const newQuantity = item.quantity + 1;
-    handleQuantityChange(item, newQuantity);
+  const handleIncrement = async (item) => {
+    try {
+      setIsUpdatingCart(true);
+      const newQuantity = item.quantity + 1;
+      handleQuantityChange(item, newQuantity);
+
+      toast.success('Added one more!', {
+        duration: 1500,
+        icon: '➕',
+        style: {
+          background: '#333',
+          color: '#fff',
+        },
+      });
+    } catch (error) {
+      toast.error('Failed to update quantity', {
+        duration: 3000,
+        icon: '❌',
+      });
+    } finally {
+      setIsUpdatingCart(false);
+    }
   };
 
-  const handleDecrement = (item) => {
-    if (item.quantity > 1) {
-      const newQuantity = item.quantity - 1;
-      handleQuantityChange(item, newQuantity);
+  const handleDecrement = async (item) => {
+    try {
+      setIsUpdatingCart(true);
+      if (item.quantity > 1) {
+        const newQuantity = item.quantity - 1;
+        handleQuantityChange(item, newQuantity);
+
+        toast('Quantity decreased', {
+          duration: 1500,
+          icon: '➖',
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+        });
+      }
+    } catch (error) {
+      toast.error('Failed to update quantity', {
+        duration: 3000,
+        icon: '❌',
+      });
+    } finally {
+      setIsUpdatingCart(false);
     }
   };
 
@@ -333,23 +417,16 @@ const ProductCatalog = () => {
 
       if (response.data) {
         await fetchCartItems();
-        toast.success('🛒 Item added to cart successfully!', {
-          duration: 2000,
-          position: 'top-right',
-          style: {
-            background: '#4f46e5',
-            color: '#ffffff',
-            padding: '16px',
-            borderRadius: '8px',
-          },
-          icon: '🛒'
+        toast.success(`${product.description} added to cart!`, {
+          ...TOAST_STYLES.success,
+          icon: '🛍️',
         });
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart. Please try again.', {
-        duration: 3000,
-        position: 'top-right',
+      toast.error(`Failed to add item: ${error.message}`, {
+        ...TOAST_STYLES.error,
+        icon: '❌',
       });
     } finally {
       setIsUpdatingCart(false);
@@ -562,8 +639,9 @@ const ProductCatalog = () => {
 
   const handleModalCheckout = async () => {
     try {
-      // Show loading toast
+      setLoading(true);
       const loadingToast = toast.loading('Processing your order...', {
+        ...TOAST_STYLES.info,
         position: 'top-center'
       });
 
@@ -599,26 +677,18 @@ const ProductCatalog = () => {
       );
 
       if (response.data.success) {
-        // Dismiss loading toast
         toast.dismiss(loadingToast);
         
-        // Show success toast with order details
         toast.success(
           <div>
-            <h4>Order Placed Successfully! 🎉</h4>
+            <h4>Order Placed Successfully!</h4>
             <p>Thank you for your purchase!</p>
             <small>Order Total: ${formatPrice(calculateTotal())}</small>
           </div>,
           {
+            ...TOAST_STYLES.success,
             duration: 5000,
             position: 'top-center',
-            style: {
-              background: '#10B981',
-              color: '#ffffff',
-              padding: '16px',
-              borderRadius: '8px',
-              minWidth: '300px'
-            }
           }
         );
 
@@ -631,22 +701,26 @@ const ProductCatalog = () => {
           contactNumber: ''
         });
         await fetchProducts();
+
+        setTimeout(() => {
+          toast('Check your order history for updates!', {
+            ...TOAST_STYLES.info,
+            icon: '📦',
+            duration: 4000,
+          });
+        }, 1000);
       }
     } catch (error) {
       console.error('Checkout error:', error);
       toast.error(
         error.response?.data?.message || 'Failed to process checkout. Please try again.',
         {
-          duration: 4000,
+          ...TOAST_STYLES.error,
           position: 'top-center',
-          style: {
-            background: '#EF4444',
-            color: '#ffffff',
-            padding: '16px',
-            borderRadius: '8px'
-          }
         }
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -709,7 +783,14 @@ const ProductCatalog = () => {
       if (response.data) {
         // Update local cart state
         setCart(prevCart => prevCart.filter(item => item.id !== cartItem.id));
-        toast.success('Item removed from cart');
+        toast.success('Item removed from cart', {
+          icon: '🗑️',
+          duration: 2000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+        });
       }
     } catch (error) {
       console.error('Error removing item:', error);
@@ -719,230 +800,236 @@ const ProductCatalog = () => {
     }
   };
 
+  if (isLoading) {
+    return <PageSpinner />;
+  }
+
   return (
     <ErrorBoundary>
-      {isLoading ? <LoadingSpinner /> : (
-        <div className="product-catalog">
-          <NavigationBar 
-            cartItemCount={cart.length} 
-            onCartClick={() => setShowCart(true)} 
-            onLogout={handleLogout}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-          />
-          
-          <Container className="mt-5 pt-4">
-            <div className="search-filter-container">
-              <div className="filter-row">
+      <div className="product-catalog">
+        <NavigationBar 
+          cartItemCount={cart.length} 
+          onCartClick={() => setShowCart(true)} 
+          onLogout={handleLogout}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
+        
+        <Container className="mt-5 pt-4">
+          <div className="search-filter-container">
+            <div className="filter-row">
+              <Form.Select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="category-select"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category, index) => (
+                  <option key={index} value={category}>{category}</option>
+                ))}
+              </Form.Select>
+            </div>
+          </div>
+
+          <Row className="products-grid">
+            {filteredProducts.map(product => (
+              <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
+                <Card className="product-card h-100">
+                  <div className="product-image-container">
+                    <img 
+                      src={product.image || 'https://via.placeholder.com/200'} 
+                      alt={product.description}
+                      className="product-image"
+                    />
+                    {product.quantity <= 5 && product.quantity > 0 && (
+                      <Badge bg="warning" className="stock-warning">
+                        Low Stock
+                      </Badge>
+                    )}
+                  </div>
+                  <Card.Body className="d-flex flex-column">
+                    <Card.Title className="product-title text-truncate">
+                      {product.description}
+                    </Card.Title>
+                    <div className="product-details">
+                      <div className="price-tag">${formatPrice(product.price)}</div>
+                      <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
+                        {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
+                      </Badge>
+                    </div>
+                    <Button 
+                      className="mt-auto add-to-cart-btn"
+                      variant={product.quantity === 0 ? 'secondary' : 'primary'}
+                      onClick={() => addToCart(product)}
+                      disabled={product.quantity === 0 || isUpdatingCart}
+                    >
+                      {isUpdatingCart ? (
+                        <ButtonSpinner />
+                      ) : (
+                        <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
+                      )}
+                      {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </Container>
+
+        <MemoizedCartDisplay 
+          showCart={showCart}
+          setShowCart={setShowCart}
+          cart={cart}
+          handleQuantityChange={handleQuantityChange}
+          isUpdatingCart={isUpdatingCart}
+          setShowCheckoutModal={setShowCheckoutModal}
+          calculateTotal={calculateTotal}
+          handleIncrement={handleIncrement}
+          handleDecrement={handleDecrement}
+          handleRemoveItem={handleRemoveItem}
+        />
+
+        <Modal show={showCheckout} onHide={() => setShowCheckout(false)} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Checkout</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Full Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={shippingDetails.name}
+                  onChange={(e) => setShippingDetails({...shippingDetails, name: e.target.value})}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Shipping Address</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={shippingDetails.address}
+                  onChange={(e) => setShippingDetails({...shippingDetails, address: e.target.value})}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Phone Number</Form.Label>
+                <Form.Control
+                  type="tel"
+                  value={shippingDetails.phone}
+                  onChange={(e) => setShippingDetails({...shippingDetails, phone: e.target.value})}
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Payment Method</Form.Label>
                 <Form.Select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="category-select"
+                  value={shippingDetails.paymentMethod}
+                  onChange={(e) => setShippingDetails({...shippingDetails, paymentMethod: e.target.value})}
                 >
-                  <option value="">All Categories</option>
-                  {categories.map((category, index) => (
-                    <option key={index} value={category}>{category}</option>
-                  ))}
+                  <option value="cod">Cash on Delivery</option>
                 </Form.Select>
+              </Form.Group>
+            </Form>
+            <div className="order-summary">
+              <h5>Order Summary</h5>
+              <ListGroup>
+                {cart.map(item => (
+                  <ListGroup.Item key={item.id}>
+                    {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+              <h5 className="mt-3">Total: ${formatPrice(calculateTotal())}</h5>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowCheckout(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleCheckout}>Place Order</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal show={showCheckoutModal} onHide={() => setShowCheckoutModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Checkout Information</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="formName" className="mb-3">
+                <Form.Label>Name *</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter your name"
+                  name="name"
+                  value={customerInfo.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group controlId="formAddress" className="mb-3">
+                <Form.Label>Address *</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter your address"
+                  name="address"
+                  value={customerInfo.address}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Form.Group>
+
+              <Form.Group controlId="formPaymentMode" className="mb-3">
+                <Form.Label>Mode of Payment *</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="paymentMode"
+                  value={customerInfo.paymentMode}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select payment mode</option>
+                  <option value="cash_on_delivery">Cash on Delivery</option>
+                </Form.Control>
+              </Form.Group>
+
+              <Form.Group controlId="formContactNumber" className="mb-3">
+                <Form.Label>Contact Number *</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter your contact number"
+                  name="contactNumber"
+                  value={customerInfo.contactNumber}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Form.Group>
+            </Form>
+            
+            <div className="order-summary mt-4">
+              <h5>Order Summary</h5>
+              <ListGroup>
+                {cart.map(item => (
+                  <ListGroup.Item key={item.id}>
+                    {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+              <div className="total mt-3">
+                <strong>Total: ${formatPrice(calculateTotal())}</strong>
               </div>
             </div>
-
-            <Row className="products-grid">
-              {filteredProducts.map(product => (
-                <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-                  <Card className="product-card h-100">
-                    <div className="product-image-container">
-                      <img 
-                        src={product.image || 'https://via.placeholder.com/200'} 
-                        alt={product.description}
-                        className="product-image"
-                      />
-                      {product.quantity <= 5 && product.quantity > 0 && (
-                        <Badge bg="warning" className="stock-warning">
-                          Low Stock
-                        </Badge>
-                      )}
-                    </div>
-                    <Card.Body className="d-flex flex-column">
-                      <Card.Title className="product-title text-truncate">
-                        {product.description}
-                      </Card.Title>
-                      <div className="product-details">
-                        <div className="price-tag">${formatPrice(product.price)}</div>
-                        <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
-                          {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
-                        </Badge>
-                      </div>
-                      <Button 
-                        className="mt-auto add-to-cart-btn"
-                        variant={product.quantity === 0 ? 'secondary' : 'primary'}
-                        onClick={() => addToCart(product)}
-                        disabled={product.quantity === 0}
-                      >
-                        <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
-                        {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                      </Button>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-          </Container>
-
-          <MemoizedCartDisplay 
-            showCart={showCart}
-            setShowCart={setShowCart}
-            cart={cart}
-            handleQuantityChange={handleQuantityChange}
-            isUpdatingCart={isUpdatingCart}
-            setShowCheckoutModal={setShowCheckoutModal}
-            calculateTotal={calculateTotal}
-            handleIncrement={handleIncrement}
-            handleDecrement={handleDecrement}
-            handleRemoveItem={handleRemoveItem}
-          />
-
-          <Modal show={showCheckout} onHide={() => setShowCheckout(false)} size="lg">
-            <Modal.Header closeButton>
-              <Modal.Title>Checkout</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form>
-                <Form.Group className="mb-3">
-                  <Form.Label>Full Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={shippingDetails.name}
-                    onChange={(e) => setShippingDetails({...shippingDetails, name: e.target.value})}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Shipping Address</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={shippingDetails.address}
-                    onChange={(e) => setShippingDetails({...shippingDetails, address: e.target.value})}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Phone Number</Form.Label>
-                  <Form.Control
-                    type="tel"
-                    value={shippingDetails.phone}
-                    onChange={(e) => setShippingDetails({...shippingDetails, phone: e.target.value})}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Payment Method</Form.Label>
-                  <Form.Select
-                    value={shippingDetails.paymentMethod}
-                    onChange={(e) => setShippingDetails({...shippingDetails, paymentMethod: e.target.value})}
-                  >
-                    <option value="cod">Cash on Delivery</option>
-                  </Form.Select>
-                </Form.Group>
-              </Form>
-              <div className="order-summary">
-                <h5>Order Summary</h5>
-                <ListGroup>
-                  {cart.map(item => (
-                    <ListGroup.Item key={item.id}>
-                      {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-                <h5 className="mt-3">Total: ${formatPrice(calculateTotal())}</h5>
-              </div>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowCheckout(false)}>Cancel</Button>
-              <Button variant="primary" onClick={handleCheckout}>Place Order</Button>
-            </Modal.Footer>
-          </Modal>
-
-          <Modal show={showCheckoutModal} onHide={() => setShowCheckoutModal(false)}>
-            <Modal.Header closeButton>
-              <Modal.Title>Checkout Information</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <Form>
-                <Form.Group controlId="formName" className="mb-3">
-                  <Form.Label>Name *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter your name"
-                    name="name"
-                    value={customerInfo.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Group>
-
-                <Form.Group controlId="formAddress" className="mb-3">
-                  <Form.Label>Address *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter your address"
-                    name="address"
-                    value={customerInfo.address}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Group>
-
-                <Form.Group controlId="formPaymentMode" className="mb-3">
-                  <Form.Label>Mode of Payment *</Form.Label>
-                  <Form.Control
-                    as="select"
-                    name="paymentMode"
-                    value={customerInfo.paymentMode}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Select payment mode</option>
-                    <option value="cash_on_delivery">Cash on Delivery</option>
-                  </Form.Control>
-                </Form.Group>
-
-                <Form.Group controlId="formContactNumber" className="mb-3">
-                  <Form.Label>Contact Number *</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter your contact number"
-                    name="contactNumber"
-                    value={customerInfo.contactNumber}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Group>
-              </Form>
-              
-              <div className="order-summary mt-4">
-                <h5>Order Summary</h5>
-                <ListGroup>
-                  {cart.map(item => (
-                    <ListGroup.Item key={item.id}>
-                      {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-                <div className="total mt-3">
-                  <strong>Total: ${formatPrice(calculateTotal())}</strong>
-                </div>
-              </div>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowCheckoutModal(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={handleModalCheckout}>
-                Confirm Order
-              </Button>
-            </Modal.Footer>
-          </Modal>
-        </div>
-      )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowCheckoutModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleModalCheckout}>
+              Confirm Order
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
     </ErrorBoundary>
   );
 };
