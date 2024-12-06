@@ -205,7 +205,9 @@ const ProductCatalog = () => {
         },
         withCredentials: true
       });
-      setProducts(response.data);
+      // Ensure we're setting an array
+      const productsData = Array.isArray(response.data.data) ? response.data.data : [];
+      setProducts(productsData);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
@@ -223,11 +225,19 @@ const ProductCatalog = () => {
     }
   };
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Add this helper function
+  const getFilteredProducts = () => {
+    if (!Array.isArray(products)) return [];
+    
+    return products.filter(product => {
+      const matchesSearch = product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !selectedCategory || selectedCategory === '' || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  };
+
+  // Replace your existing filtered products logic with this:
+  const filteredProducts = getFilteredProducts();
 
   const handleAddToCart = async (product) => {
     try {
