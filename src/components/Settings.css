@@ -689,4 +689,36 @@
 .settings-card.dark-mode .form-select {
   color: #ffffff !important;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* Remove any conflicting styles first */
+.form-check-label {
+  background: transparent !important;
+}
+
+/* Style for switch labels with high specificity to override Bootstrap */
+.settings-card .form-check-label,
+.form-check .form-check-label,
+.form-switch .form-check-label {
+  color: #000000 !important; /* Black for light mode */
+  font-weight: 500;
+  opacity: 1 !important;
+}
+
+/* Dark mode override with high specificity */
+.settings-card.dark-mode .form-check-label,
+.dark-mode .form-check .form-check-label,
+.dark-mode .form-switch .form-check-label {
+  color: #ffffff !important; /* Pure white for dark mode */
+  opacity: 1 !important;
+}
+
+/* Ensure switch text is visible and properly styled */
+.form-switch {
+  padding-left: 2.5em;
+}
+
+/* Hover states for better interaction */
+.form-check:hover .form-check-label {
+  opacity: 1;
 } 

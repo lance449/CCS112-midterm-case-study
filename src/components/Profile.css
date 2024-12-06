@@ -26,11 +26,7 @@
 .form-label,
 Form.Label,
 .form-group label {
-  color: #1a202c !important;
-  font-weight: 500 !important;
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-  opacity: 1 !important;
+  display: none;
 }
 
 .form-control {
@@ -57,9 +53,9 @@ Form.Label,
 
 .section-title {
   font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+  font-weight: 700;
   color: #1a202c;
+  margin-bottom: 1.5rem;
 }
 
 .action-button {
@@ -256,4 +252,52 @@ label::after,
 
 .password-toggle:hover {
   color: #2d3748;
+}
+
+/* Replace form labels with header-style text */
+.profile-field-label {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  margin-bottom: 0.75rem !important;
+  display: block !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Container for each field */
+.profile-field-container {
+  margin-bottom: 1.5rem;
+}
+
+/* Input styling */
+.profile-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  background: #ffffff;
+  color: #2d3748;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.profile-input:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+/* Dark mode styles */
+body.dark-mode .profile-field-label {
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .profile-input {
+  background: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+body.dark-mode .profile-input:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
 }

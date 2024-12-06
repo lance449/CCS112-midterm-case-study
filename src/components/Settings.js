@@ -66,10 +66,8 @@ const Settings = () => {
           {success && <Alert variant="success">{success}</Alert>}
 
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-4">
-              <Form.Label className={`settings-label ${darkMode ? 'dark-label' : ''}`}>
-                Notifications
-              </Form.Label>
+            <div className="profile-field-container">
+              <div className="profile-field-label">Notifications</div>
               <Form.Check
                 type="switch"
                 name="notifications"
@@ -78,12 +76,10 @@ const Settings = () => {
                 label="Enable push notifications"
                 className={darkMode ? 'dark-switch' : ''}
               />
-            </Form.Group>
+            </div>
 
-            <Form.Group className="mb-4">
-              <Form.Label className={`settings-label ${darkMode ? 'dark-label' : ''}`}>
-                Email Updates
-              </Form.Label>
+            <div className="profile-field-container">
+              <div className="profile-field-label">Email Updates</div>
               <Form.Check
                 type="switch"
                 name="emailUpdates"
@@ -92,12 +88,10 @@ const Settings = () => {
                 label="Receive email updates about orders and promotions"
                 className={darkMode ? 'dark-switch' : ''}
               />
-            </Form.Group>
+            </div>
 
-            <Form.Group className="mb-4">
-              <Form.Label className={`settings-label ${darkMode ? 'dark-label' : ''}`}>
-                Theme
-              </Form.Label>
+            <div className="profile-field-container">
+              <div className="profile-field-label">Theme</div>
               <Form.Check
                 type="switch"
                 name="darkMode"
@@ -106,12 +100,10 @@ const Settings = () => {
                 label="Dark mode"
                 className={darkMode ? 'dark-switch' : ''}
               />
-            </Form.Group>
+            </div>
 
-            <Form.Group className="mb-4">
-              <Form.Label className={`settings-label ${darkMode ? 'dark-label' : ''}`}>
-                Language
-              </Form.Label>
+            <div className="profile-field-container">
+              <div className="profile-field-label">Language</div>
               <Form.Select
                 name="language"
                 value={settings.language}
@@ -122,7 +114,7 @@ const Settings = () => {
                 <option value="spanish">Spanish</option>
                 <option value="french">French</option>
               </Form.Select>
-            </Form.Group>
+            </div>
 
             <div className="button-wrapper d-flex justify-content-end">
               <Button 

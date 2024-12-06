@@ -115,82 +115,83 @@ const Profile = () => {
           {success && <Alert variant="success">{success}</Alert>}
           
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label className="form-label">Name</Form.Label>
-              <Form.Control
+            <div className="profile-field-container">
+              <div className="profile-field-label">Name</div>
+              <input
                 type="text"
                 name="name"
                 value={profile.name}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="form-control theme-transition"
+                className="profile-input"
               />
-            </Form.Group>
+            </div>
 
-                <Form.Group className="mb-3">
-                  <Form.Label className="form-label">Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={profile.email}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="form-control theme-transition"
-                  />
-                </Form.Group>
+            <div className="profile-field-container">
+              <div className="profile-field-label">Email</div>
+              <input
+                type="email"
+                name="email"
+                value={profile.email}
+                onChange={handleInputChange}
+                disabled={!isEditing}
+                className="profile-input"
+              />
+            </div>
 
-                {isEditing && (
-                  <div className="password-section">
-                    <h5 className="section-title">Change Password</h5>
-                    <Form.Group className="mb-3">
-                      <Form.Label className="form-label">Current Password</Form.Label>
-                      <div className="password-input-wrapper">
-                        <Form.Control
-                          type={showPassword ? "text" : "password"}
-                          name="currentPassword"
-                          value={profile.currentPassword}
-                          onChange={handleInputChange}
-                          className="form-control theme-transition"
-                        />
-                        <Button
-                          variant="link"
-                          className="password-toggle"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-                        </Button>
-                      </div>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                      <Form.Label className="form-label">New Password</Form.Label>
-                      <div className="password-input-wrapper">
-                        <Form.Control
-                          type={showNewPassword ? "text" : "password"}
-                          name="newPassword"
-                          value={profile.newPassword}
-                          onChange={handleInputChange}
-                          className="form-control theme-transition"
-                        />
-                        <Button
-                          variant="link"
-                          className="password-toggle"
-                          onClick={() => setShowNewPassword(!showNewPassword)}
-                        >
-                          <FontAwesomeIcon icon={showNewPassword ? faEyeSlash : faEye} />
-                        </Button>
-                      </div>
-                    </Form.Group>
-
-                <Form.Group className="mb-4">
-                  <Form.Label className="form-label">Confirm New Password</Form.Label>
+            {isEditing && (
+              <div className="password-section">
+                <h5 className="section-title">Change Password</h5>
+                
+                <div className="profile-field-container">
+                  <div className="profile-field-label">Current Password</div>
                   <div className="password-input-wrapper">
-                    <Form.Control
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="currentPassword"
+                      value={profile.currentPassword}
+                      onChange={handleInputChange}
+                      className="profile-input"
+                    />
+                    <Button
+                      variant="link"
+                      className="password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="profile-field-container">
+                  <div className="profile-field-label">New Password</div>
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      name="newPassword"
+                      value={profile.newPassword}
+                      onChange={handleInputChange}
+                      className="profile-input"
+                    />
+                    <Button
+                      variant="link"
+                      className="password-toggle"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      <FontAwesomeIcon icon={showNewPassword ? faEyeSlash : faEye} />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="profile-field-container">
+                  <div className="profile-field-label">Confirm New Password</div>
+                  <div className="password-input-wrapper">
+                    <input
                       type={showConfirmPassword ? "text" : "password"}
                       name="newPassword_confirmation"
                       value={profile.newPassword_confirmation}
                       onChange={handleInputChange}
-                      className="form-control theme-transition"
+                      className="profile-input"
                     />
                     <Button
                       variant="link"
@@ -200,7 +201,7 @@ const Profile = () => {
                       <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
                     </Button>
                   </div>
-                </Form.Group>
+                </div>
               </div>
             )}
 

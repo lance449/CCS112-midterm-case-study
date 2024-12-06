@@ -190,3 +190,31 @@ body.dark-mode .search-bar .form-control:focus {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
 }
+
+/* Specific styling for Account and Cart labels */
+.nav-icon .icon-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #000000 !important; /* Pure black in light mode */
+  text-shadow: none; /* Remove any text shadow */
+  background: transparent !important; /* Remove any background */
+  opacity: 1 !important; /* Ensure full opacity */
+}
+
+/* Dark mode specific for Account and Cart labels */
+body.dark-mode .nav-icon .icon-label {
+  color: #ffffff !important; /* Pure white in dark mode */
+}
+
+/* Hover state for better interaction */
+.nav-icon:hover .icon-label {
+  opacity: 0.9 !important;
+}
+
+/* Remove any Bootstrap overrides that might affect the labels */
+.nav-icon span.icon-label,
+.nav-icons .nav-link span.icon-label {
+  color: inherit !important;
+  background: none !important;
+  border: none !important;
+}
