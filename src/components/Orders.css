@@ -1,11 +1,12 @@
 .order-history-container {
   padding: 2rem;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #ffffff;
+  color: #2d3748;
   min-height: 100vh;
 }
 
 .order-card {
-  background: white;
+  background: #ffffff;
   border-radius: 15px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   padding: 2rem;
@@ -28,17 +29,19 @@
   overflow: hidden;
   border: none;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  color: #2d3748;
 }
 
 .table thead th {
-  background: #2c3e50;
-  color: white;
+  background: #f7fafc;
+  color: #1a202c;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.9rem;
   letter-spacing: 0.5px;
   padding: 1rem;
   border: none;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .table tbody tr {
@@ -59,21 +62,21 @@
 
 .order-id {
   font-weight: 600;
-  color: #2c3e50;
-  background: #e9ecef;
+  color: #2d3748;
+  background: #edf2f7;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   display: inline-block;
 }
 
 .order-date {
-  color: #6c757d;
+  color: #4a5568;
   font-size: 0.9rem;
 }
 
 .order-total {
   font-weight: 600;
-  color: #2c3e50;
+  color: #2d3748;
   font-size: 1.1rem;
 }
 
@@ -161,8 +164,8 @@
 }
 
 .back-to-shop {
-  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-  color: white;
+  background: #4299e1;
+  color: #ffffff;
   border: none;
   padding: 0.8rem 1.5rem;
   border-radius: 8px;
@@ -177,10 +180,10 @@
 }
 
 .back-to-shop:hover {
+  background: #3182ce;
+  color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, #34495e 0%, #2980b9 100%);
-  color: white;
 }
 
 .back-to-shop:active {
@@ -212,32 +215,33 @@
 
 /* Dark Mode Styles */
 .order-history-container.dark-mode {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+  color: #e2e8f0;
 }
 
 .order-card.dark-mode {
-  background: #2c3e50;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  background: #2d3748;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid #4a5568;
 }
 
 .table.dark-mode {
-  background: #2c3e50;
-  color: #ecf0f1;
+  background: #2d3748;
+  color: #e2e8f0;
 }
 
 .table.dark-mode thead th {
-  background: #1a2634;
-  color: #fff;
-  border-bottom: 2px solid #3498db;
+  background: #1a202c;
+  color: #e2e8f0;
+  border-bottom: 2px solid #4299e1;
 }
 
 .table.dark-mode tbody tr {
-  border-bottom: 1px solid #34495e;
+  border-bottom: 1px solid #4a5568;
 }
 
 .table.dark-mode tbody tr:hover {
-  background-color: #34495e;
-  cursor: pointer;
+  background: #283344;
 }
 
 .table.dark-mode td {
@@ -293,11 +297,14 @@
 }
 
 .back-to-shop.dark-mode {
-  background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+  background: #4a5568;
+  color: #e2e8f0;
+  border: none;
 }
 
 .back-to-shop.dark-mode:hover {
-  background: linear-gradient(135deg, #2980b9 0%, #34495e 100%);
+  background: #2d3748;
+  color: #4299e1;
 }
 
 .loading-container.dark-mode {

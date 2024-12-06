@@ -13,8 +13,8 @@
 }
 
 .profile-card .card-header {
-  background: linear-gradient(135deg, #3182ce, #2c5282);
-  color: white;
+  background: linear-gradient(135deg, #2b6cb0, #1a365d);
+  color: #ffffff;
   padding: 1.5rem;
   border: none;
 }
@@ -23,11 +23,14 @@
   margin-bottom: 1.5rem;
 }
 
-.form-label {
-  font-weight: 500;
+.form-label,
+Form.Label,
+.form-group label {
+  color: #1a202c !important;
+  font-weight: 500 !important;
   font-size: 0.95rem;
   margin-bottom: 0.5rem;
-  color: #4a5568;
+  opacity: 1 !important;
 }
 
 .form-control {
@@ -36,11 +39,14 @@
   border: 2px solid #e2e8f0;
   font-size: 1rem;
   transition: all 0.2s ease;
+  background: #ffffff;
+  color: #1a202c;
 }
 
 .form-control:focus {
-  border-color: #3182ce;
+  border-color: #4299e1;
   box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+  background: #ffffff;
 }
 
 .password-section {
@@ -53,7 +59,7 @@
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
-  color: #2d3748;
+  color: #1a202c;
 }
 
 .action-button {
@@ -62,11 +68,16 @@
   font-weight: 500;
   transition: all 0.2s ease;
   min-width: 140px;
+  background: #4299e1;
+  color: #ffffff;
+  border: none;
 }
 
 .action-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #3182ce;
+  color: #ffffff;
 }
 
 .back-button {
@@ -88,14 +99,16 @@ body.dark-mode .profile-card {
   background: #1a202c;
 }
 
-body.dark-mode .form-label {
-  color: #e2e8f0;
+body.dark-mode .form-label,
+body.dark-mode Form.Label,
+body.dark-mode .form-group label {
+  color: #e2e8f0 !important;
 }
 
 body.dark-mode .form-control {
-  background-color: #2d3748;
-  border-color: #4a5568;
+  background: #2d3748;
   color: #e2e8f0;
+  border-color: #4a5568;
 }
 
 body.dark-mode .section-title {
@@ -188,4 +201,59 @@ label::after,
   color: #e2e8f0 !important;
   display: block !important;
   margin-bottom: 8px !important;
+}
+
+.profile-card.dark-mode {
+  background: #2d3748;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.profile-card.dark-mode .card-header {
+  background: linear-gradient(135deg, #2b6cb0, #1a365d);
+  color: #e2e8f0;
+}
+
+.profile-card.dark-mode .card-body {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+.form-control.dark-mode {
+  background: #1a202c;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+.form-control.dark-mode:focus {
+  background: #2d3748;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+}
+
+.password-toggle.dark-mode {
+  color: #e2e8f0;
+}
+
+.password-toggle.dark-mode:hover {
+  color: #4299e1;
+}
+
+.action-button.dark-mode {
+  background: #4a5568;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
+
+.action-button.dark-mode:hover {
+  background: #2d3748;
+  border-color: #4299e1;
+  color: #4299e1;
+}
+
+.password-toggle {
+  color: #4a5568;
+}
+
+.password-toggle:hover {
+  color: #2d3748;
 }
