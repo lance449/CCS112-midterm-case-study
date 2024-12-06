@@ -56,73 +56,81 @@ const MemoizedCartDisplay = React.memo(({
     show={showCart} 
     onHide={() => setShowCart(false)} 
     placement="end"
-    backdrop="static"
-    keyboard={false}
+    className="cart-sidebar"
   >
-    <Offcanvas.Header closeButton>
-      <Offcanvas.Title>Shopping Cart</Offcanvas.Title>
+    <Offcanvas.Header closeButton className="cart-header">
+      <Offcanvas.Title>
+        <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
+        Shopping Cart ({cart.length} items)
+      </Offcanvas.Title>
     </Offcanvas.Header>
-    <Offcanvas.Body>
-      <ListGroup>
-        {cart.length === 0 ? (
-          <ListGroup.Item>Your cart is empty</ListGroup.Item>
-        ) : (
-          cart.map((item) => (
-            <ListGroup.Item key={item.id} className="cart-item">
-              <div className="item-details">
-                <div>
-                  <h6>{item.product.description}</h6>
-                  <p className="mb-0">Price: ${parseFloat(item.product.price).toFixed(2)}</p>
-                </div>
-                <div className="quantity-controls">
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => handleDecrement(item)}
-                    disabled={item.quantity <= 1 || isUpdatingCart}
-                  >
-                    <FontAwesomeIcon icon={faMinus} />
-                  </Button>
-                  <span className="quantity-display mx-2">{item.quantity}</span>
-                  <Button
-                    variant="outline-secondary"
-                    size="sm"
-                    onClick={() => handleIncrement(item)}
-                    disabled={isUpdatingCart}
-                  >
-                    <FontAwesomeIcon icon={faPlus} />
-                  </Button>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    className="ms-2"
-                    onClick={() => handleRemoveItem(item)}
-                    disabled={isUpdatingCart}
-                  >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </Button>
-                </div>
-                <div className="item-total">
-                  ${(item.quantity * parseFloat(item.product.price)).toFixed(2)}
-                </div>
-              </div>
-            </ListGroup.Item>
-          ))
-        )}
-      </ListGroup>
-      {cart.length > 0 && (
-        <div className="cart-footer">
-          <div className="cart-total">
-            Total: ${calculateTotal().toFixed(2)}
-          </div>
-          <Button 
-            variant="primary" 
-            onClick={() => setShowCheckoutModal(true)}
-            disabled={isUpdatingCart}
-          >
-            Proceed to Checkout
+    <Offcanvas.Body className="cart-body">
+      {cart.length === 0 ? (
+        <div className="empty-cart">
+          <FontAwesomeIcon icon={faShoppingCart} size="3x" className="mb-3" />
+          <p>Your cart is empty</p>
+          <Button variant="primary" onClick={() => setShowCart(false)}>
+            Continue Shopping
           </Button>
         </div>
+      ) : (
+        <>
+          <div className="cart-items">
+            {cart.map((item) => (
+              <div key={item.id} className="cart-item-card">
+                <div className="item-image">
+                  <img src={item.product.image || 'https://via.placeholder.com/100'} alt={item.product.description} />
+                </div>
+                <div className="item-details">
+                  <h6 className="item-title">{item.product.description}</h6>
+                  <div className="item-price">${item.product.price.toFixed(2)}</div>
+                  <div className="quantity-controls">
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onClick={() => handleDecrement(item)}
+                      disabled={item.quantity <= 1}
+                    >
+                      <FontAwesomeIcon icon={faMinus} />
+                    </Button>
+                    <span className="quantity">{item.quantity}</span>
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onClick={() => handleIncrement(item)}
+                    >
+                      <FontAwesomeIcon icon={faPlus} />
+                    </Button>
+                  </div>
+                </div>
+                <Button
+                  variant="link"
+                  className="remove-item"
+                  onClick={() => handleRemoveItem(item)}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <div className="cart-footer">
+            <div className="cart-summary">
+              <div className="d-flex justify-content-between mb-2">
+                <span>Subtotal:</span>
+                <span>${calculateTotal().toFixed(2)}</span>
+              </div>
+              <Button 
+                variant="primary" 
+                size="lg" 
+                block 
+                onClick={() => setShowCheckoutModal(true)}
+                disabled={isUpdatingCart}
+              >
+                Proceed to Checkout
+              </Button>
+            </div>
+          </div>
+        </>
       )}
     </Offcanvas.Body>
   </Offcanvas>
@@ -395,7 +403,9 @@ const ProductCatalog = () => {
 
   // Add this helper function to safely handle number calculations
   const formatPrice = (price) => {
-    return Number(price).toFixed(2);
+    // Convert price to number and handle any potential invalid values
+    const numPrice = Number(price);
+    return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
   };
 
   // Update the cart display section
@@ -691,22 +701,32 @@ const ProductCatalog = () => {
           ) : (
             filteredProducts.map(product => (
               <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-                <Card className="product-card">
-                  <Card.Body>
-                    <Card.Title className="mb-3">{product.description}</Card.Title>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                      <div className="price">${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</div>
-                      <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
-                        {product.quantity > 0 ? `In Stock (${product.quantity})` : 'Out of Stock'}
+                <Card className="product-card h-100">
+                  <div className="product-image-container">
+                    <img 
+                      src={product.image || 'https://via.placeholder.com/200'} 
+                      alt={product.description}
+                      className="product-image"
+                    />
+                    {product.quantity <= 5 && product.quantity > 0 && (
+                      <Badge bg="warning" className="stock-warning">
+                        Low Stock
                       </Badge>
-                    </div>
-                    <div className="category-badge mb-3">
-                      <Badge bg="primary" className="category-label">
-                        {product.category}
+                    )}
+                  </div>
+                  <Card.Body className="d-flex flex-column">
+                    <Card.Title className="product-title text-truncate">
+                      {product.description}
+                    </Card.Title>
+                    <div className="product-details">
+                      <div className="price-tag">${formatPrice(product.price)}</div>
+                      <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
+                        {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
                       </Badge>
                     </div>
                     <Button 
-                      className="add-to-cart-btn"
+                      className="mt-auto add-to-cart-btn"
+                      variant={product.quantity === 0 ? 'secondary' : 'primary'}
                       onClick={() => addToCart(product)}
                       disabled={product.quantity === 0}
                     >
