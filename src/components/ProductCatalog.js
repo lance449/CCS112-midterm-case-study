@@ -47,7 +47,10 @@ const MemoizedCartDisplay = React.memo(({
   handleQuantityChange, 
   isUpdatingCart,
   setShowCheckoutModal,
-  calculateTotal 
+  calculateTotal,
+  handleIncrement,
+  handleDecrement,
+  handleRemoveItem 
 }) => (
   <Offcanvas 
     show={showCart} 
@@ -75,19 +78,28 @@ const MemoizedCartDisplay = React.memo(({
                   <Button
                     variant="outline-secondary"
                     size="sm"
-                    onClick={() => handleQuantityChange(item, -1)}
+                    onClick={() => handleDecrement(item)}
                     disabled={item.quantity <= 1 || isUpdatingCart}
                   >
                     <FontAwesomeIcon icon={faMinus} />
                   </Button>
-                  <span className="quantity-display">{item.quantity}</span>
+                  <span className="quantity-display mx-2">{item.quantity}</span>
                   <Button
                     variant="outline-secondary"
                     size="sm"
-                    onClick={() => handleQuantityChange(item, 1)}
+                    onClick={() => handleIncrement(item)}
                     disabled={isUpdatingCart}
                   >
                     <FontAwesomeIcon icon={faPlus} />
+                  </Button>
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    className="ms-2"
+                    onClick={() => handleRemoveItem(item)}
+                    disabled={isUpdatingCart}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
                   </Button>
                 </div>
                 <div className="item-total">
@@ -217,70 +229,91 @@ const ProductCatalog = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const addToCart = async (product) => {
-    setLoadingStates(prev => ({ ...prev, [product.id]: true }));
+  const handleAddToCart = async (product) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/cart`, {
+      const response = await axios.post(`${API_URL}/api/cart`, {
         product_id: product.id,
-        quantity: 1
+        quantity: 1,
+        is_new: true
       }, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         }
       });
-      await fetchCartItems();
-      toast.success('Added to cart');
+
+      if (response.data) {
+        await fetchCartItems(); // Refresh cart items
+        toast.success('Item added to cart');
+      }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      toast.error('Failed to add to cart');
-    } finally {
-      setLoadingStates(prev => ({ ...prev, [product.id]: false }));
+      toast.error('Failed to add item to cart');
     }
   };
 
-  const handleQuantityChange = async (item, change) => {
-    if (isUpdatingCart) return;
-    
-    const newQuantity = Math.max(1, item.quantity + change);
-    
-    // Update local state immediately for better UX
-    setCart(prevCart => 
-      prevCart.map(cartItem => 
-        cartItem.id === item.id 
-          ? { ...cartItem, quantity: newQuantity }
-          : cartItem
-      )
-    );
-
+  const handleQuantityChange = async (cartItem, newQuantity) => {
     try {
-      const token = localStorage.getItem('token');
+      const quantity = parseInt(newQuantity);
       
-      // Make API call without waiting for response
-      axios.put(`${API_URL}/cart/${item.id}`, {
-        quantity: newQuantity
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      }).catch(error => {
-        console.error('Error updating quantity:', error);
-        toast.error('Failed to update quantity');
-        // Revert cart state on error
-        setCart(prevCart => 
-          prevCart.map(cartItem => 
-            cartItem.id === item.id 
-              ? { ...cartItem, quantity: item.quantity }
-              : cartItem
-          )
-        );
+      if (isNaN(quantity) || quantity < 1) {
+        toast.error('Please enter a valid quantity');
+        return;
+      }
+
+      // Update UI immediately
+      setCart(prevCart => 
+        prevCart.map(item => 
+          item.id === cartItem.id 
+            ? { ...item, quantity: quantity }
+            : item
+        )
+      );
+
+      const response = await axios.put(`${API_URL}/api/cart/${cartItem.id}`, {
+        quantity: quantity
       });
 
+      if (!response.data || !response.data.cart_item) {
+        await fetchCartItems();
+        throw new Error('Invalid server response');
+      }
+
     } catch (error) {
-      console.error('Error updating quantity:', error);
+      console.error('Update error:', error);
       toast.error('Failed to update quantity');
+      await fetchCartItems();
+    }
+  };
+
+  const handleIncrement = (item) => {
+    const newQuantity = item.quantity + 1;
+    handleQuantityChange(item, newQuantity);
+  };
+
+  const handleDecrement = (item) => {
+    if (item.quantity > 1) {
+      const newQuantity = item.quantity - 1;
+      handleQuantityChange(item, newQuantity);
+    }
+  };
+
+  const addToCart = async (product) => {
+    try {
+      const response = await axios.post(`${API_URL}/api/cart`, {
+        product_id: product.id,
+        quantity: 1,
+        is_new: true
+      });
+
+      if (response.data) {
+        await fetchCartItems();
+        toast.success('Item added to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart');
     }
   };
 
@@ -373,16 +406,23 @@ const ProductCatalog = () => {
           <span>{item.product?.description || item.description}</span>
           <div className="quantity-controls">
             <button 
-              onClick={() => handleQuantityChange(quantity - 1)}
-              disabled={quantity <= 1}
-              className="quantity-btn"
+              className="quantity-btn" 
+              onClick={() => handleDecrement(item)}
+              disabled={item.quantity <= 1}
             >
               -
             </button>
-            <span className="quantity-display">{quantity}</span>
+            <input
+              type="number"
+              min="1"
+              value={item.quantity}
+              onChange={(e) => handleQuantityChange(item, e.target.value)}
+              className="quantity-input"
+              style={{ width: '60px', textAlign: 'center' }}
+            />
             <button 
-              onClick={() => handleQuantityChange(quantity + 1)}
-              className="quantity-btn"
+              className="quantity-btn" 
+              onClick={() => handleIncrement(item)}
             >
               +
             </button>
@@ -429,24 +469,13 @@ const ProductCatalog = () => {
   // Update the fetchCartItems function to be more efficient
   const fetchCartItems = async () => {
     try {
-      const token = localStorage.getItem('token');
-      console.log('Fetching cart with URL:', `${API_URL}/api/cart`); // Debug log
-      
-      const response = await axios.get(`${API_URL}/api/cart`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        withCredentials: true
-      });
-      
+      console.log('Fetching cart items...');
+      const response = await axios.get(`${API_URL}/api/cart`);
+      console.log('Cart items received:', response.data);
       setCart(response.data);
     } catch (error) {
       console.error('Error fetching cart:', error);
-      // Log the full URL that was attempted
-      console.error('Attempted URL:', error.config?.url);
-      console.error('Failed to load cart items');
+      toast.error('Failed to fetch cart items');
     }
   };
 
@@ -560,23 +589,18 @@ const ProductCatalog = () => {
             <p className="mb-0">Price: ${parseFloat(item.product.price).toFixed(2)}</p>
           </div>
           <div className="quantity-controls">
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              onClick={() => handleQuantityChange(item, -1)}
-              disabled={item.quantity <= 1 || isUpdatingCart}
-            >
-              <FontAwesomeIcon icon={faMinus} />
-            </Button>
-            <span className="quantity-display">{item.quantity}</span>
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              onClick={() => handleQuantityChange(item, 1)}
-              disabled={isUpdatingCart}
-            >
-              <FontAwesomeIcon icon={faPlus} />
-            </Button>
+            <input
+              type="number"
+              min="1"
+              value={item.quantity}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                // Update immediately for responsive UI
+                handleQuantityChange(item, newValue);
+              }}
+              className="quantity-input"
+              style={{ width: '60px', textAlign: 'center' }}
+            />
           </div>
           <div className="item-total">
             ${(item.quantity * parseFloat(item.product.price)).toFixed(2)}
@@ -585,6 +609,45 @@ const ProductCatalog = () => {
       </ListGroup.Item>
     ))
   );
+
+  const updateQuantity = async (cartItemId, newQuantity) => {
+    try {
+      // Update the endpoint to use the correct path
+      const response = await axios.put(`${API_URL}/api/cart/${cartItemId}`, {
+        quantity: newQuantity
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      await fetchCartItems();
+      toast.success('Quantity updated');
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      toast.error('Failed to update quantity');
+    }
+  };
+
+  // Add this function to handle item removal
+  const handleRemoveItem = async (cartItem) => {
+    try {
+      setIsUpdatingCart(true);
+      const response = await axios.delete(`${API_URL}/api/cart/${cartItem.id}`);
+      
+      if (response.data) {
+        // Update local cart state
+        setCart(prevCart => prevCart.filter(item => item.id !== cartItem.id));
+        toast.success('Item removed from cart');
+      }
+    } catch (error) {
+      console.error('Error removing item:', error);
+      toast.error('Failed to remove item from cart');
+    } finally {
+      setIsUpdatingCart(false);
+    }
+  };
 
   return (
     <div className="product-catalog">
@@ -656,6 +719,9 @@ const ProductCatalog = () => {
         isUpdatingCart={isUpdatingCart}
         setShowCheckoutModal={setShowCheckoutModal}
         calculateTotal={calculateTotal}
+        handleIncrement={handleIncrement}
+        handleDecrement={handleDecrement}
+        handleRemoveItem={handleRemoveItem}
       />
 
       <Modal show={showCheckout} onHide={() => setShowCheckout(false)} size="lg">
