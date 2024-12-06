@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
   Container,
@@ -97,87 +97,146 @@ const MemoizedCartDisplay = React.memo(({
   handleIncrement,
   handleDecrement,
   handleRemoveItem 
-}) => (
-  <Offcanvas 
-    show={showCart} 
-    onHide={() => setShowCart(false)} 
-    placement="end"
-    className="cart-sidebar"
-  >
-    <Offcanvas.Header closeButton className="cart-header">
-      <Offcanvas.Title>
-        <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
-        Shopping Cart ({cart.length} items)
-      </Offcanvas.Title>
-    </Offcanvas.Header>
-    <Offcanvas.Body className="cart-body">
-      {cart.length === 0 ? (
-        <div className="empty-cart">
-          <FontAwesomeIcon icon={faShoppingCart} size="3x" className="mb-3" />
-          <p>Your cart is empty</p>
-          <Button variant="primary" onClick={() => setShowCart(false)}>
-            Continue Shopping
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="cart-items">
-            {cart.map((item) => (
-              <div key={item.id} className="cart-item-card">
-                <div className="item-image">
-                  <img src={item.product.image || 'https://via.placeholder.com/100'} alt={item.product.description} />
-                </div>
-                <div className="item-details">
-                  <h6 className="item-title">{item.product.description}</h6>
-                  <div className="item-price">${formatPrice(item.product.price)}</div>
-                  <div className="quantity-controls">
-                    <Button
-                      variant="light"
-                      size="sm"
-                      onClick={() => handleDecrement(item)}
-                      disabled={isUpdatingCart}
-                    >
-                      <FontAwesomeIcon icon={faMinus} />
-                    </Button>
-                    <span className="quantity">{item.quantity}</span>
-                    <Button
-                      variant="light"
-                      size="sm"
-                      onClick={() => handleIncrement(item)}
-                      disabled={isUpdatingCart}
-                    >
-                      <FontAwesomeIcon icon={faPlus} />
-                    </Button>
-                    <Button
-                      variant="link"
-                      className="remove-button"
-                      onClick={() => handleRemoveItem(item.id)}
-                      disabled={isUpdatingCart}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="cart-footer">
-            <div className="cart-total">
-              <strong>Total:</strong> ${calculateCartTotal(cart)}
-            </div>
-            <Button 
-              variant="primary" 
-              className="checkout-button"
-              onClick={() => setShowCheckoutModal(true)}
-            >
-              Proceed to Checkout
+}) => {
+  const [closingCart, setClosingCart] = useState(false);
+  const [removingItems, setRemovingItems] = useState(new Set());
+  const [updatingQuantities, setUpdatingQuantities] = useState(new Set());
+
+  const handleClose = useCallback(() => {
+    setClosingCart(true);
+    const timer = setTimeout(() => {
+      setShowCart(false);
+      setClosingCart(false);
+    }, 250); // Match animation duration
+    return () => clearTimeout(timer);
+  }, [setShowCart]);
+
+  useEffect(() => {
+    if (!showCart) {
+      setClosingCart(false);
+    }
+  }, [showCart]);
+
+  const handleRemove = async (itemId) => {
+    setRemovingItems(prev => new Set(prev).add(itemId));
+    const timer = setTimeout(() => {
+      handleRemoveItem(itemId);
+      setRemovingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }, 250);
+    return () => clearTimeout(timer);
+  };
+
+  const handleQuantityUpdate = async (item, newQuantity) => {
+    setUpdatingQuantities(prev => new Set(prev).add(item.id));
+    await handleQuantityChange(item, newQuantity);
+    setTimeout(() => {
+      setUpdatingQuantities(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(item.id);
+        return newSet;
+      });
+    }, 200);
+  };
+
+  return (
+    <Offcanvas 
+      show={showCart} 
+      onHide={handleClose} 
+      placement="end"
+      className={`cart-sidebar ${showCart && !closingCart ? 'show' : ''} ${closingCart ? 'closing' : ''}`}
+    >
+      <Offcanvas.Header closeButton className="cart-header">
+        <Offcanvas.Title>
+          <FontAwesomeIcon icon={faShoppingCart} />
+          Shopping Cart ({cart.length} items)
+        </Offcanvas.Title>
+      </Offcanvas.Header>
+      <Offcanvas.Body className="cart-body">
+        {cart.length === 0 ? (
+          <div className="empty-cart">
+            <FontAwesomeIcon icon={faShoppingCart} size="2x" />
+            <p>Your cart is empty</p>
+            <Button variant="primary" onClick={handleClose}>
+              Continue Shopping
             </Button>
           </div>
-        </>
-      )}
-    </Offcanvas.Body>
-  </Offcanvas>
-));
+        ) : (
+          <>
+            <div className="cart-items">
+              {cart.map((item) => (
+                <div 
+                  key={item.id} 
+                  className={`cart-item-card ${removingItems.has(item.id) ? 'removing' : ''}`}
+                >
+                  <div className="item-image">
+                    <img 
+                      src={item.product.image || 'https://via.placeholder.com/80'} 
+                      alt={item.product.description}
+                    />
+                  </div>
+                  <div className="item-details">
+                    <div>
+                      <h6 className="item-title">{item.product.description}</h6>
+                      <div className="item-price">${formatPrice(item.product.price)}</div>
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <div className="quantity-controls">
+                        <Button
+                          className="quantity-btn"
+                          onClick={() => handleQuantityUpdate(item, item.quantity - 1)}
+                          disabled={isUpdatingCart || item.quantity <= 1}
+                          aria-label="Decrease quantity"
+                        >
+                          <FontAwesomeIcon icon={faMinus} />
+                        </Button>
+                        <span className={`quantity ${updatingQuantities.has(item.id) ? 'updating' : ''}`}>
+                          {item.quantity}
+                        </span>
+                        <Button
+                          className="quantity-btn"
+                          onClick={() => handleQuantityUpdate(item, item.quantity + 1)}
+                          disabled={isUpdatingCart || item.quantity >= item.product.quantity}
+                          aria-label="Increase quantity"
+                        >
+                          <FontAwesomeIcon icon={faPlus} />
+                        </Button>
+                      </div>
+                      <Button
+                        className="remove-button"
+                        onClick={() => handleRemove(item.id)}
+                        disabled={isUpdatingCart}
+                        aria-label="Remove item"
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="cart-footer">
+              <div className={`cart-total ${updatingQuantities.size > 0 ? 'updating' : ''}`}>
+                <strong>Total</strong>
+                <strong>${formatPrice(calculateTotal())}</strong>
+              </div>
+              <Button 
+                className="checkout-button"
+                onClick={() => setShowCheckoutModal(true)}
+                disabled={isUpdatingCart}
+              >
+                Proceed to Checkout
+              </Button>
+            </div>
+          </>
+        )}
+      </Offcanvas.Body>
+    </Offcanvas>
+  );
+});
 
 const ProductCatalog = () => {
   const [products, setProducts] = useState([]);
@@ -319,12 +378,28 @@ const ProductCatalog = () => {
     try {
       const quantity = parseInt(newQuantity);
       
-      if (isNaN(quantity) || quantity < 1) {
-        notifyWarning('Please enter a valid quantity');
+      // Validate quantity
+      if (isNaN(quantity)) {
+        notifyWarning('Please enter a valid number');
         return;
       }
 
-      // Update local cart state immediately without notification
+      if (quantity < 1) {
+        notifyWarning('Quantity cannot be less than 1');
+        return;
+      }
+
+      if (quantity > item.product.quantity) {
+        notifyWarning(`Only ${item.product.quantity} items available in stock`);
+        return;
+      }
+
+      // If quantity is approaching stock limit (80% or more)
+      if (quantity >= item.product.quantity * 0.8) {
+        notifyWarning(`Only ${item.product.quantity - quantity} items left in stock`);
+      }
+
+      // Update local cart state
       setCart(prevCart => 
         prevCart.map(cartItem => 
           cartItem.id === item.id 
@@ -333,7 +408,7 @@ const ProductCatalog = () => {
         )
       );
 
-      // Make API call silently without notification
+      // Make API call
       const response = await axios.put(`${API_URL}/api/cart/${item.id}`, {
         quantity: quantity
       });
@@ -354,7 +429,19 @@ const ProductCatalog = () => {
     try {
       setIsUpdatingCart(true);
       const newQuantity = item.quantity + 1;
-      handleQuantityChange(item, newQuantity);
+      
+      // Check if new quantity exceeds stock
+      if (newQuantity > item.product.quantity) {
+        notifyWarning(`Maximum available stock reached (${item.product.quantity} items)`);
+        return;
+      }
+
+      // Show warning if approaching stock limit
+      if (newQuantity >= item.product.quantity * 0.8) {
+        notifyWarning(`Only ${item.product.quantity - newQuantity} items left in stock`);
+      }
+
+      await handleQuantityChange(item, newQuantity);
     } catch (error) {
       notifyError('Failed to update quantity');
     } finally {
@@ -367,7 +454,9 @@ const ProductCatalog = () => {
       setIsUpdatingCart(true);
       if (item.quantity > 1) {
         const newQuantity = item.quantity - 1;
-        handleQuantityChange(item, newQuantity);
+        await handleQuantityChange(item, newQuantity);
+      } else {
+        notifyWarning('Minimum quantity is 1');
       }
     } catch (error) {
       notifyError('Failed to update quantity');
@@ -379,6 +468,19 @@ const ProductCatalog = () => {
   const addToCart = async (product) => {
     try {
       setIsUpdatingCart(true);
+      
+      // Check if product is already in cart
+      const existingItem = cart.find(item => item.product.id === product.id);
+      
+      if (existingItem) {
+        // Check if adding one more would exceed stock
+        if (existingItem.quantity >= product.quantity) {
+          notifyWarning(`Maximum available stock reached (${product.quantity} items)`);
+          return;
+        }
+      }
+
+      // For new items, start with quantity 1
       const response = await axios.post(`${API_URL}/api/cart`, {
         product_id: product.id,
         quantity: 1,
