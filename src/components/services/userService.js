@@ -1,76 +1,72 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_URL = 'http://localhost:8000/api';
 
-class UserService {
-  constructor() {
-    this.axios = axios.create({
-      baseURL: API_URL,
-      timeout: 10000
-    });
+const userService = {
+    getUserProfile: async () => {
+        try {
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
 
-    // Add request interceptor to include auth token
-    this.axios.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+            const response = await axios({
+                method: 'GET',
+                url: `${API_URL}/user/profile`,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.data) {
+                throw new Error('No data received from server');
+            }
+            
+            console.log('Profile data received:', response.data);
+            return response.data;
+            
+        } catch (error) {
+            console.error('Profile fetch error:', error);
+            throw new Error(error.response?.data?.message || 'Failed to fetch profile');
         }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-  }
+    },
 
-  // Get user profile
-  async getUserProfile() {
-    try {
-      const response = await this.axios.get('/user');
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
+    updateProfile: async (profileData) => {
+        try {
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+
+            console.log('Updating profile with data:', profileData);
+
+            const response = await axios({
+                method: 'PUT',
+                url: `${API_URL}/user/profile`,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: profileData
+            });
+
+            if (!response.data) {
+                throw new Error('No data received from server');
+            }
+
+            console.log('Profile update response:', response.data);
+            return response.data;
+            
+        } catch (error) {
+            console.error('Profile update error:', error);
+            throw new Error(error.response?.data?.message || 'Failed to update profile');
+        }
     }
-  }
+};
 
-  // Update profile information
-  async updateProfile(userData) {
-    try {
-      const response = await this.axios.post('/user/update', userData);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  // Update password
-  async updatePassword(passwordData) {
-    try {
-      const response = await this.axios.post('/user/update-password', passwordData);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  // Error handler
-  handleError(error) {
-    if (error.response) {
-      // Server responded with error
-      const message = error.response.data.message || 'An error occurred';
-      if (error.response.status === 401) {
-        // Handle unauthorized access
-        localStorage.removeItem('token');
-        window.location.href = '/login';
-      }
-      throw new Error(message);
-    } else if (error.request) {
-      // Request made but no response
-      throw new Error('Unable to connect to the server');
-    } else {
-      // Other errors
-      throw error;
-    }
-  }
-}
-
-export default new UserService(); 
+export default userService;
