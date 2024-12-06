@@ -28,6 +28,8 @@ import {
   faChartLine
 } from '@fortawesome/free-solid-svg-icons';
 import './styles/ProductCatalog.css';
+import './styles/CheckoutModal.css';
+import './Cart.css';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../api';
 import NavigationBar from './Navbar';
@@ -908,13 +910,15 @@ const ProductCatalog = () => {
         </Modal>
 
         <Modal show={showCheckoutModal} onHide={() => setShowCheckoutModal(false)}>
-          <Modal.Header closeButton>
+          <Modal.Header closeButton className="checkout-modal-header">
             <Modal.Title>Checkout Information</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form>
               <Form.Group controlId="formName" className="mb-3">
-                <Form.Label>Name *</Form.Label>
+                <Form.Label className="form-label">
+                  Name <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Enter your name"
@@ -922,11 +926,14 @@ const ProductCatalog = () => {
                   value={customerInfo.name}
                   onChange={handleInputChange}
                   required
+                  className="form-control-dark"
                 />
               </Form.Group>
 
               <Form.Group controlId="formAddress" className="mb-3">
-                <Form.Label>Address *</Form.Label>
+                <Form.Label className="form-label">
+                  Address <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Enter your address"
@@ -934,25 +941,30 @@ const ProductCatalog = () => {
                   value={customerInfo.address}
                   onChange={handleInputChange}
                   required
+                  className="form-control-dark"
                 />
               </Form.Group>
 
               <Form.Group controlId="formPaymentMode" className="mb-3">
-                <Form.Label>Mode of Payment *</Form.Label>
-                <Form.Control
-                  as="select"
+                <Form.Label className="form-label">
+                  Mode of Payment <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Select
                   name="paymentMode"
                   value={customerInfo.paymentMode}
                   onChange={handleInputChange}
                   required
+                  className="form-control-dark"
                 >
                   <option value="">Select payment mode</option>
                   <option value="cash_on_delivery">Cash on Delivery</option>
-                </Form.Control>
+                </Form.Select>
               </Form.Group>
 
               <Form.Group controlId="formContactNumber" className="mb-3">
-                <Form.Label>Contact Number *</Form.Label>
+                <Form.Label className="form-label">
+                  Contact Number <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Enter your contact number"
@@ -960,6 +972,7 @@ const ProductCatalog = () => {
                   value={customerInfo.contactNumber}
                   onChange={handleInputChange}
                   required
+                  className="form-control-dark"
                 />
               </Form.Group>
             </Form>
@@ -968,13 +981,20 @@ const ProductCatalog = () => {
               <h5>Order Summary</h5>
               <ListGroup>
                 {cart.map(item => (
-                  <ListGroup.Item key={item.id}>
-                    {item.product.description} x {item.quantity} = ${formatPrice(item.product.price * item.quantity)}
+                  <ListGroup.Item key={item.id} className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <span className="item-name">{item.product.description}</span>
+                      <span className="text-muted ms-2">x {item.quantity}</span>
+                    </div>
+                    <span className="item-price">
+                      ${formatPrice(item.product.price * item.quantity)}
+                    </span>
                   </ListGroup.Item>
                 ))}
               </ListGroup>
-              <div className="total mt-3">
-                <strong>Total: ${formatPrice(calculateTotal())}</strong>
+              <div className="total mt-3 d-flex justify-content-between align-items-center">
+                <h6 className="mb-0">Total:</h6>
+                <h6 className="mb-0">${formatPrice(calculateTotal())}</h6>
               </div>
             </div>
           </Modal.Body>
@@ -983,7 +1003,7 @@ const ProductCatalog = () => {
               Cancel
             </Button>
             <Button variant="primary" onClick={handleModalCheckout}>
-              Confirm Order
+              {loading ? <ButtonSpinner /> : 'Confirm Order'}
             </Button>
           </Modal.Footer>
         </Modal>

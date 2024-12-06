@@ -1,0 +1,121 @@
+.checkout-modal-header {
+  border-bottom: 1px solid #E2E8F0;
+  padding: 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-control-dark {
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  color: #2D3748;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.form-control-dark:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+.form-control-dark::placeholder {
+  color: #A0AEC0;
+}
+
+.form-label {
+  color: #1a202c !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem;
+  display: block;
+  letter-spacing: 0.025em;
+}
+
+.form-label .text-danger {
+  color: #E53E3E !important;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+.list-group-item {
+  border: 1px solid #E2E8F0;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px !important;
+  background-color: #F8FAFC;
+}
+
+.list-group-item:last-child {
+  margin-bottom: 0;
+}
+
+.modal-footer {
+  border-top: 1px solid #E2E8F0;
+  padding: 1.5rem;
+}
+
+.btn-primary {
+  background-color: #3B82F6;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #2563EB;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: #E2E8F0;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  color: #4A5568;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #CBD5E0;
+  color: #2D3748;
+}
+
+.text-danger {
+  color: #E53E3E !important;
+}
+
+.order-summary {
+  background-color: #F8FAFC;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+}
+
+.order-summary h5 {
+  color: #1a202c;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .list-group-item {
+    padding: 0.75rem;
+  }
+  
+  .order-summary {
+    padding: 1rem;
+  }
+} 
