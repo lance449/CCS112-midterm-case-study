@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar, Container, Nav, Form, InputGroup, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -16,7 +16,19 @@ import './Navbar.css';
 const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSearchChange }) => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isScrolled, setIsScrolled] = useState(false);
   const userName = localStorage.getItem('userName') || 'User';
+
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const offset = window.scrollY;
+      setIsScrolled(offset > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
@@ -39,7 +51,7 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
   };
 
   return (
-    <Navbar expand="lg" className="main-navbar">
+    <Navbar expand="lg" className={`main-navbar ${isScrolled ? 'scrolled' : ''}`}>
       <Container fluid className="nav-container">
         <Navbar.Brand href="#" className="brand-text">
           <span className="shop-text">Shop</span>
@@ -47,30 +59,17 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
         </Navbar.Brand>
         
         <Nav className="nav-categories">
-          <Nav.Link 
-            className={`nav-link ${selectedCategory === 'all' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('all')}
-          >
-            All Products
-          </Nav.Link>
-          <Nav.Link 
-            className={`nav-link ${selectedCategory === 'deals' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('deals')}
-          >
-            Deals
-          </Nav.Link>
-          <Nav.Link 
-            className={`nav-link ${selectedCategory === 'new' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('new')}
-          >
-            What's New
-          </Nav.Link>
-          <Nav.Link 
-            className={`nav-link ${selectedCategory === 'delivery' ? 'active' : ''}`}
-            onClick={() => handleCategoryClick('delivery')}
-          >
-            Delivery
-          </Nav.Link>
+          {['all', 'deals', 'new', 'delivery'].map((category) => (
+            <Nav.Link 
+              key={category}
+              className={`nav-link ${selectedCategory === category ? 'active' : ''}`}
+              onClick={() => handleCategoryClick(category)}
+            >
+              {category === 'all' ? 'All Products' :
+               category === 'new' ? "What's New" :
+               category.charAt(0).toUpperCase() + category.slice(1)}
+            </Nav.Link>
+          ))}
         </Nav>
 
         <div className="nav-right">
@@ -79,8 +78,9 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
+              className="search-input"
             />
-            <InputGroup.Text>
+            <InputGroup.Text className="search-icon">
               <FontAwesomeIcon icon={faSearch} />
             </InputGroup.Text>
           </InputGroup>
@@ -88,26 +88,28 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
           <Nav className="nav-icons">
             <Dropdown align="end">
               <Dropdown.Toggle as={Nav.Link} className="nav-icon">
-                <FontAwesomeIcon icon={faUser} />
+                <FontAwesomeIcon icon={faUser} className="icon-size" />
                 <span className="icon-label">Account</span>
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="account-dropdown">
-                <Dropdown.Header>Hello, {userName}!</Dropdown.Header>
-                <Dropdown.Item onClick={() => handleAccountClick('profile')}>
-                  <FontAwesomeIcon icon={faUserCircle} className="me-2" />
-                  My Profile
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleAccountClick('orders')}>
-                  <FontAwesomeIcon icon={faHistory} className="me-2" />
-                  Order History
-                </Dropdown.Item>
-                <Dropdown.Item onClick={() => handleAccountClick('settings')}>
-                  <FontAwesomeIcon icon={faCog} className="me-2" />
-                  Settings
-                </Dropdown.Item>
+                <Dropdown.Header className="dropdown-header">Hello, {userName}!</Dropdown.Header>
+                {[
+                  { key: 'profile', icon: faUserCircle, text: 'My Profile' },
+                  { key: 'orders', icon: faHistory, text: 'Order History' },
+                  { key: 'settings', icon: faCog, text: 'Settings' }
+                ].map((item) => (
+                  <Dropdown.Item 
+                    key={item.key}
+                    onClick={() => handleAccountClick(item.key)}
+                    className="dropdown-item-custom"
+                  >
+                    <FontAwesomeIcon icon={item.icon} className="me-2" />
+                    {item.text}
+                  </Dropdown.Item>
+                ))}
                 <Dropdown.Divider />
-                <Dropdown.Item onClick={onLogout}>
+                <Dropdown.Item onClick={onLogout} className="dropdown-item-custom logout-item">
                   <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
                   Logout
                 </Dropdown.Item>
@@ -115,10 +117,12 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
             </Dropdown>
 
             <Nav.Link onClick={onCartClick} className="nav-icon cart-icon">
-              <FontAwesomeIcon icon={faShoppingCart} />
-              {cartItemCount > 0 && (
-                <span className="cart-badge">{cartItemCount}</span>
-              )}
+              <div className="icon-wrapper">
+                <FontAwesomeIcon icon={faShoppingCart} className="icon-size" />
+                {cartItemCount > 0 && (
+                  <span className="cart-badge">{cartItemCount}</span>
+                )}
+              </div>
               <span className="icon-label">Cart</span>
             </Nav.Link>
           </Nav>
