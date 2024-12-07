@@ -25,6 +25,7 @@ const Dashboard = () => {
     price: '',
     quantity: '',
     category: '',
+    image: null
   });
 
   const [editProduct, setEditProduct] = useState(null);
@@ -225,7 +226,22 @@ const Dashboard = () => {
 
     setAddErrors({});
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/products', newProduct);
+      const formData = new FormData();
+      formData.append('barcode', newProduct.barcode);
+      formData.append('description', newProduct.description);
+      formData.append('price', newProduct.price);
+      formData.append('quantity', newProduct.quantity);
+      formData.append('category', newProduct.category);
+      if (newProduct.image) {
+        formData.append('image', newProduct.image);
+      }
+
+      const response = await axios.post('http://127.0.0.1:8000/api/products', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
       setProducts([...products, response.data]);
       setShowAdd(false);
       setNewProduct({
@@ -234,6 +250,7 @@ const Dashboard = () => {
         price: '',
         quantity: '',
         category: '',
+        image: null
       });
       notifySuccess('Product added successfully! 🎉');
     } catch (error) {
@@ -249,21 +266,36 @@ const Dashboard = () => {
 
   // Update the handleEditProduct function
   const handleEditProduct = async () => {
+    if (!editProduct) return;
+
     const validationErrors = validateProductData(editProduct);
     if (Object.keys(validationErrors).length > 0) {
       setEditErrors(validationErrors);
-      notifyWarning('Please fill in all required fields correctly.');
       return;
     }
 
     setEditErrors({});
     try {
-      const response = await axios.put(`http://127.0.0.1:8000/api/products/${editProduct.id}`, editProduct);
-      if (response.status === 200) {
-        setEditProduct(null);
-        fetchProducts();
-        notifySuccess('Product updated successfully! 📝');
+      const formData = new FormData();
+      formData.append('barcode', editProduct.barcode);
+      formData.append('description', editProduct.description);
+      formData.append('price', editProduct.price);
+      formData.append('quantity', editProduct.quantity);
+      formData.append('category', editProduct.category);
+      if (editProduct.newImage) {
+        formData.append('image', editProduct.newImage);
       }
+      formData.append('_method', 'PUT');
+
+      const response = await axios.post(`http://127.0.0.1:8000/api/products/${editProduct.id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      setProducts(products.map(p => p.id === editProduct.id ? response.data : p));
+      setEditProduct(null);
+      notifySuccess('Product updated successfully! 🎉');
     } catch (error) {
       if (error.response && error.response.data.errors) {
         setEditErrors(error.response.data.errors);
@@ -462,6 +494,7 @@ const Dashboard = () => {
               <Table responsive striped bordered hover>
                 <thead className="bg-light">
                   <tr>
+                    <th>Image</th>
                     <th>Barcode</th>
                     <th>Description</th>
                     <th>Price</th>
@@ -495,6 +528,23 @@ const Dashboard = () => {
                           exit={{ opacity: 0, y: -20 }}
                           transition={{ duration: 0.2 }}
                         >
+                          <td>
+                            <img 
+                              src={product.image_path ? `http://localhost:8000/storage/${product.image_path}` : 'https://via.placeholder.com/50'} 
+                              alt={product.description}
+                              style={{ 
+                                width: '50px', 
+                                height: '50px', 
+                                objectFit: 'cover',
+                                borderRadius: '4px',
+                                border: '1px solid #e2e8f0'
+                              }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://via.placeholder.com/50';
+                              }}
+                            />
+                          </td>
                           <td>{product.barcode}</td>
                           <td>{product.description}</td>
                           <td>${typeof product.price === 'number' ? product.price.toFixed(2) : product.price}</td>
@@ -607,6 +657,21 @@ const Dashboard = () => {
                   placeholder="Enter product category"
                 />
               </Form.Group>
+
+              <Form.Group className="admin-form-group">
+                <h6 className="form-heading mb-2">Product Image</h6>
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setNewProduct({ ...newProduct, image: file });
+                    }
+                  }}
+                />
+                <small className="text-muted">Maximum file size: 2MB. Supported formats: JPEG, PNG, GIF</small>
+              </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer>
@@ -670,6 +735,40 @@ const Dashboard = () => {
                     value={editProduct.category}
                     onChange={(e) => setEditProduct({ ...editProduct, category: e.target.value })}
                   />
+                </Form.Group>
+
+                <Form.Group className="admin-form-group">
+                  <h6 className="form-heading mb-2">Product Image</h6>
+                  {editProduct.image_path && (
+                    <div className="mb-2">
+                      <img 
+                        src={`http://localhost:8000/storage/${editProduct.image_path}`}
+                        alt="Current product" 
+                        style={{ 
+                          width: '100px', 
+                          height: '100px', 
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          border: '1px solid #e2e8f0'
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/100';
+                        }}
+                      />
+                    </div>
+                  )}
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setEditProduct({ ...editProduct, newImage: file });
+                      }
+                    }}
+                  />
+                  <small className="text-muted">Maximum file size: 2MB. Supported formats: JPEG, PNG, GIF</small>
                 </Form.Group>
               </Form>
             </Modal.Body>

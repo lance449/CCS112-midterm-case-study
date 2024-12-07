@@ -174,8 +174,12 @@ const MemoizedCartDisplay = React.memo(({
                 >
                   <div className="item-image">
                     <img 
-                      src={item.product.image || 'https://via.placeholder.com/80'} 
+                      src={item.product.image_path ? `http://localhost:8000/storage/${item.product.image_path}` : 'https://via.placeholder.com/80'} 
                       alt={item.product.description}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/80';
+                      }}
                     />
                   </div>
                   <div className="item-details">
@@ -989,9 +993,13 @@ const ProductCatalog = () => {
                 <Card className="product-card h-100">
                   <div className="product-image-container">
                     <img 
-                      src={product.image || 'https://via.placeholder.com/200'} 
+                      src={product.image_path ? `http://localhost:8000/storage/${product.image_path}` : 'https://via.placeholder.com/200'} 
                       alt={product.description}
                       className="product-image"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/200';
+                      }}
                     />
                     {product.quantity <= 5 && product.quantity > 0 && (
                       <Badge bg="warning" className="stock-warning">
