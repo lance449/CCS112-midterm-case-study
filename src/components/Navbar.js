@@ -13,6 +13,38 @@ import {
 import { useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
+const SearchBar = ({ searchTerm, onSearchChange }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleFocus = () => {
+    setIsExpanded(true);
+  };
+
+  const handleBlur = () => {
+    if (!searchTerm) {
+      setIsExpanded(false);
+    }
+  };
+
+  return (
+    <div className={`search-bar ${isExpanded ? 'expanded' : ''}`}>
+      <div className="search-input-container">
+        <Form.Control
+          placeholder="Search products..."
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          className="search-input"
+        />
+        <div className="search-icon">
+          <FontAwesomeIcon icon={faSearch} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSearchChange }) => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -73,18 +105,8 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
         </Nav>
 
         <div className="nav-right">
-          <InputGroup className="search-bar">
-            <Form.Control
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="search-input"
-            />
-            <InputGroup.Text className="search-icon">
-              <FontAwesomeIcon icon={faSearch} />
-            </InputGroup.Text>
-          </InputGroup>
-
+          <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
+          
           <Nav className="nav-icons">
             <Dropdown align="end">
               <Dropdown.Toggle as={Nav.Link} className="nav-icon">
