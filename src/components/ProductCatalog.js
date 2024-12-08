@@ -120,15 +120,21 @@ const MemoizedCartDisplay = React.memo(({
 
   const handleRemove = async (itemId) => {
     setRemovingItems(prev => new Set(prev).add(itemId));
-    const timer = setTimeout(() => {
-      handleRemoveItem(itemId);
-      setRemovingItems(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(itemId);
-        return newSet;
-      });
-    }, 250);
-    return () => clearTimeout(timer);
+    
+    // Wait for animation to complete before actually removing
+    setTimeout(async () => {
+      try {
+        await handleRemoveItem(itemId);
+      } catch (error) {
+        console.error('Error removing item:', error);
+        // Remove the item from removingItems if there's an error
+        setRemovingItems(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      }
+    }, 300); // Match this with your CSS animation duration
   };
 
   const handleQuantityUpdate = async (item, newQuantity) => {

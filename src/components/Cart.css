@@ -51,12 +51,13 @@
   transition: all 0.3s ease;
   animation: fadeIn 0.3s ease-out;
   transform-origin: top;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .cart-item-card.removing {
-  animation: slideOut 0.3s ease-out;
-  opacity: 0;
   transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .item-image {
