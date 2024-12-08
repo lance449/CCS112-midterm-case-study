@@ -284,6 +284,8 @@ const ProductCatalog = () => {
     paymentMode: ''
   });
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(8); // 4x2 grid = 8 products per page
 
   useEffect(() => {
     const isDark = document.body.classList.contains('dark-mode');
@@ -933,23 +935,59 @@ const ProductCatalog = () => {
     }
   };
 
-  // Add this sorting function
+  // Update the sorting function
   const getSortedProducts = useCallback((products) => {
     if (!Array.isArray(products)) return [];
     
+    const productsToSort = [...products]; // Create a copy to avoid mutating original array
+    
     switch (sortOption) {
       case 'price-asc':
-        return [...products].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        return productsToSort.sort((a, b) => 
+          parseFloat(a.price) - parseFloat(b.price)
+        );
       case 'price-desc':
-        return [...products].sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        return productsToSort.sort((a, b) => 
+          parseFloat(b.price) - parseFloat(a.price)
+        );
       case 'name-asc':
-        return [...products].sort((a, b) => a.description.localeCompare(b.description));
+        return productsToSort.sort((a, b) => 
+          a.description.toLowerCase().localeCompare(b.description.toLowerCase())
+        );
       case 'name-desc':
-        return [...products].sort((a, b) => b.description.localeCompare(a.description));
+        return productsToSort.sort((a, b) => 
+          b.description.toLowerCase().localeCompare(a.description.toLowerCase())
+        );
       default:
-        return products;
+        return productsToSort;
     }
   }, [sortOption]);
+
+  // Update how we get the current products
+  const getFilteredAndSortedProducts = useCallback(() => {
+    // First filter the products
+    const filtered = products.filter(product => {
+      const matchesSearch = product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !selectedCategory || selectedCategory === '' || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+
+    // Then sort the filtered products
+    return getSortedProducts(filtered);
+  }, [products, searchTerm, selectedCategory, getSortedProducts]);
+
+  // Update the pagination logic
+  const filteredAndSortedProducts = getFilteredAndSortedProducts();
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredAndSortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / productsPerPage);
+
+  // Add this pagination handler
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (isLoading) {
     return <PageSpinner />;
@@ -964,41 +1002,19 @@ const ProductCatalog = () => {
           onLogout={handleLogout}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={(value) => setSelectedCategory(value)}
+          sortOption={sortOption}
+          onSortChange={(value) => setSortOption(value)}
         />
         
         <Container className="mt-5 pt-4">
           <Slider products={products} />
-          <div className="search-filter-container">
-            <div className="filter-row">
-              <Form.Select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="category-select"
-              >
-                <option value="">All Categories</option>
-                {categories.map((category, index) => (
-                  <option key={index} value={category}>{category}</option>
-                ))}
-              </Form.Select>
-
-              <Form.Select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-                className="sort-select"
-              >
-                <option value="default">Sort By</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name-asc">Name: A to Z</option>
-                <option value="name-desc">Name: Z to A</option>
-              </Form.Select>
-            </div>
-          </div>
-
-          <Row className="products-grid">
-            {getSortedProducts(filteredProducts).map(product => (
-              <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-                <Card className="product-card h-100">
+          <div className="products-grid">
+            {currentProducts.map(product => (
+              <div key={product.id} className="product-wrapper">
+                <Card className="product-card">
                   <div className="product-image-container">
                     <Card.Img 
                       variant="top" 
@@ -1038,9 +1054,47 @@ const ProductCatalog = () => {
                     </Button>
                   </Card.Body>
                 </Card>
-              </Col>
+              </div>
             ))}
-          </Row>
+          </div>
+
+          <div className="pagination-container">
+            <ul className="pagination">
+              <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+              </li>
+              
+              {[...Array(totalPages)].map((_, index) => (
+                <li
+                  key={index + 1}
+                  className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </button>
+                </li>
+              ))}
+              
+              <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
+              </li>
+            </ul>
+          </div>
         </Container>
 
         <MemoizedCartDisplay 

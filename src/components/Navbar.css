@@ -371,3 +371,50 @@ body.dark-mode .nav-icon .icon-label {
 .search-input:focus::placeholder {
   opacity: 0.5;
 }
+
+/* Add these styles to your existing Navbar.css */
+.filter-controls {
+  display: flex;
+  gap: 1rem;
+  margin-right: 1rem;
+}
+
+.category-select,
+.sort-select {
+  min-width: 160px;
+  padding: 0.5rem;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #2d3748;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-select:hover,
+.sort-select:hover {
+  border-color: var(--primary-color);
+}
+
+.category-select:focus,
+.sort-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+  outline: none;
+}
+
+/* Dark mode support */
+body.dark-mode .category-select,
+body.dark-mode .sort-select {
+  background-color: #2d3748;
+  color: #e2e8f0;
+  border-color: #4a5568;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .filter-controls {
+    display: none; /* Hide on mobile */
+  }
+}

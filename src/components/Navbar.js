@@ -8,7 +8,8 @@ import {
   faSearch,
   faUserCircle,
   faHistory,
-  faCog
+  faCog,
+  faFilter
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import './Navbar.css';
@@ -45,26 +46,20 @@ const SearchBar = ({ searchTerm, onSearchChange }) => {
   );
 };
 
-const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSearchChange }) => {
+const NavigationBar = ({ 
+  cartItemCount, 
+  onCartClick, 
+  onLogout, 
+  searchTerm, 
+  onSearchChange,
+  categories = [],
+  selectedCategory,
+  onCategoryChange,
+  sortOption,
+  onSortChange
+}) => {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [isScrolled, setIsScrolled] = useState(false);
   const userName = localStorage.getItem('userName') || 'User';
-
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      const offset = window.scrollY;
-      setIsScrolled(offset > 100);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleCategoryClick = (category) => {
-    setSelectedCategory(category);
-  };
 
   const handleAccountClick = (option) => {
     switch(option) {
@@ -83,16 +78,39 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
   };
 
   return (
-    <Navbar expand="lg" className={`main-navbar ${isScrolled ? 'scrolled' : ''}`}>
+    <Navbar expand="lg" className="main-navbar">
       <Container fluid className="nav-container">
         <Navbar.Brand href="#" className="brand-text">
           <span className="shop-text">Ecommerce </span>
           <span className="cart-text">Shop</span>
         </Navbar.Brand>
-        
-   
 
         <div className="nav-right">
+          <div className="filter-controls">
+            <Form.Select
+              value={selectedCategory}
+              onChange={(e) => onCategoryChange(e.target.value)}
+              className="category-select"
+            >
+              <option value="">All Categories</option>
+              {categories.map((category, index) => (
+                <option key={index} value={category}>{category}</option>
+              ))}
+            </Form.Select>
+
+            <Form.Select
+              value={sortOption}
+              onChange={(e) => onSortChange(e.target.value)}
+              className="sort-select"
+            >
+              <option value="default">Sort By</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+            </Form.Select>
+          </div>
+
           <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
           
           <Nav className="nav-icons">
