@@ -4,6 +4,31 @@
   padding: 2rem;
 }
 
+/* Back button styles */
+.back-button {
+  background: linear-gradient(135deg, #4299e1, #3182ce) !important;
+  color: white !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  transition: all 0.2s ease !important;
+  margin-bottom: 1rem !important;
+}
+
+.back-button:hover {
+  background: linear-gradient(135deg, #3182ce, #2c5282) !important;
+  transform: translateY(-1px) !important;
+}
+
+.back-button svg {
+  font-size: 1.1rem;
+}
+
+/* Profile card styles */
 .profile-card {
   background: #ffffff;
   border-radius: 16px;
@@ -17,6 +42,130 @@
   color: #ffffff;
   padding: 1.5rem;
   border: none;
+}
+
+/* Form styles */
+.profile-field-container {
+  margin-bottom: 1.5rem;
+}
+
+.profile-field-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.profile-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.profile-input:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+/* Action buttons */
+.action-button {
+  background: linear-gradient(135deg, #4299e1, #3182ce) !important;
+  color: white !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.action-button:hover {
+  background: linear-gradient(135deg, #3182ce, #2c5282) !important;
+  transform: translateY(-1px) !important;
+}
+
+.action-button.secondary {
+  background: linear-gradient(135deg, #718096, #4a5568) !important;
+}
+
+.action-button.secondary:hover {
+  background: linear-gradient(135deg, #4a5568, #2d3748) !important;
+}
+
+/* Rest of existing styles */
+.button-wrapper {
+  margin-bottom: 1rem;
+}
+
+.button-wrapper .btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.button-wrapper .btn:hover {
+  background-color: #3182ce;
+  transform: translateY(-1px);
+}
+
+.button-wrapper .btn-secondary {
+  background-color: #718096;
+}
+
+.button-wrapper .btn-secondary:hover {
+  background-color: #4a5568;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.profile-actions .btn {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.profile-actions .btn-primary {
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+  border: none;
+}
+
+.profile-actions .btn-primary:hover {
+  background: linear-gradient(135deg, #3182ce, #2c5282);
+  transform: translateY(-1px);
+}
+
+.profile-actions .btn-secondary {
+  background-color: #718096;
+  border: none;
+}
+
+.profile-actions .btn-secondary:hover {
+  background-color: #4a5568;
+  transform: translateY(-1px);
 }
 
 .form-group {

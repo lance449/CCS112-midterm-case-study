@@ -342,7 +342,7 @@ const ProductCatalog = () => {
         },
         withCredentials: true
       });
-      // Ensure we're setting an array
+      console.log('First product data:', response.data.data[0]); // Check the structure
       const productsData = Array.isArray(response.data.data) ? response.data.data : [];
       setProducts(productsData);
     } catch (error) {
@@ -1012,50 +1012,54 @@ const ProductCatalog = () => {
         <Container className="mt-5 pt-4">
           <Slider products={products} />
           <div className="products-grid">
-            {currentProducts.map(product => (
-              <div key={product.id} className="product-wrapper">
-                <Card className="product-card">
-                  <div className="product-image-container">
-                    <Card.Img 
-                      variant="top" 
-                      src={product.image_url || 'placeholder.jpg'} 
-                      className="product-image"
-                      onError={(e) => {
-                        e.target.src = '/placeholder.jpg';
-                      }}
-                    />
-                  </div>
-                  <Card.Body className="d-flex flex-column">
-                    <Card.Title className="product-title text-truncate">
-                      {product.description}
-                    </Card.Title>
-                    <div className="product-details">
-                      <div className="price-tag">${formatPrice(product.price)}</div>
-                      <Badge 
-                        bg={product.quantity > 0 ? 'success' : 'danger'} 
-                        className="stock-badge"
+            {currentProducts.map(product => {
+              console.log('Rendering product:', product); // Debug log
+              return (
+                <div key={product.id} className="product-wrapper">
+                  <Card className="product-card">
+                    <div className="product-image-container">
+                      <Card.Img 
+                        variant="top" 
+                        src={product.image_url || '/placeholder.jpg'} 
+                        className="product-image"
+                        onError={(e) => {
+                          e.target.src = '/placeholder.jpg';
+                          console.warn(`Image failed to load for product ${product.id}`);
+                        }}
+                      />
+                    </div>
+                    <Card.Body>
+                      <h5 className="product-name">{product.description}</h5>
+                      <div className="product-details">
+                        <div className="price-tag">
+                          {typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2)}
+                        </div>
+                        <Badge 
+                          bg={product.quantity > 0 ? 'success' : 'danger'} 
+                          className="stock-badge"
+                        >
+                          {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
+                        </Badge>
+                      </div>
+                      <div className="product-info">
+                        <small className="text-muted">
+                          <div>Category: {product.category}</div>
+                          <div>Barcode: {product.barcode}</div>
+                        </small>
+                      </div>
+                      <Button 
+                        className="add-to-cart-btn"
+                        variant={product.quantity === 0 ? 'secondary' : 'primary'}
+                        onClick={() => handleAddToCart(product)}
+                        disabled={product.quantity === 0}
                       >
-                        {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
-                      </Badge>
-                    </div>
-                    <div className="product-info mt-2">
-                      <small className="text-muted">
-                        <div>Category: {product.category}</div>
-                        <div>Barcode: {product.barcode}</div>
-                      </small>
-                    </div>
-                    <Button 
-                      className="mt-auto add-to-cart-btn"
-                      variant={product.quantity === 0 ? 'secondary' : 'primary'}
-                      onClick={() => handleAddToCart(product)}
-                      disabled={product.quantity === 0}
-                    >
-                      {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </div>
-            ))}
+                        {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </div>
+              );
+            })}
           </div>
 
           <div className="pagination-container">
