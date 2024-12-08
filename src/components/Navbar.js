@@ -86,23 +86,11 @@ const NavigationBar = ({ cartItemCount, onCartClick, onLogout, searchTerm, onSea
     <Navbar expand="lg" className={`main-navbar ${isScrolled ? 'scrolled' : ''}`}>
       <Container fluid className="nav-container">
         <Navbar.Brand href="#" className="brand-text">
-          <span className="shop-text">Shop</span>
-          <span className="cart-text">cart</span>
+          <span className="shop-text">Ecommerce </span>
+          <span className="cart-text">Shop</span>
         </Navbar.Brand>
         
-        <Nav className="nav-categories">
-          {['all', 'deals', 'new', 'delivery'].map((category) => (
-            <Nav.Link 
-              key={category}
-              className={`nav-link ${selectedCategory === category ? 'active' : ''}`}
-              onClick={() => handleCategoryClick(category)}
-            >
-              {category === 'all' ? 'All Products' :
-               category === 'new' ? "What's New" :
-               category.charAt(0).toUpperCase() + category.slice(1)}
-            </Nav.Link>
-          ))}
-        </Nav>
+   
 
         <div className="nav-right">
           <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />

@@ -7,7 +7,7 @@ const Sidebar = ({ onLogout, onCreateAdmin }) => {
   return (
     <div className="sidebar bg-dark text-white">
       <div className="sidebar-header p-3">
-        <h5 className="mb-0">Admin Dashboard</h5>
+        <h5 className="mb-0 sidebar-title">Admin Dashboard</h5>
       </div>
       <Nav className="flex-column">
         <Nav.Link className="text-white">

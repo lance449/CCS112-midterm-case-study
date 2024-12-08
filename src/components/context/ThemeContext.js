@@ -11,26 +11,31 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
     
-    if (!darkMode) {
-      document.body.classList.remove('dark-mode');
-      const darkElements = document.querySelectorAll('.dark-mode');
-      darkElements.forEach(element => {
-        element.classList.remove('dark-mode');
-      });
+    const currentPath = window.location.pathname;
+    const isExcludedPage = ['/login', '/signup', '/dashboard'].some(path => 
+      currentPath.startsWith(path)
+    );
+
+    if (darkMode && !isExcludedPage) {
+      document.body.classList.add('dark-mode');
     } else {
-      const isAuthPage = window.location.pathname.includes('/login') || 
-                        window.location.pathname.includes('/signup');
-      if (!isAuthPage) {
-        document.body.classList.add('dark-mode');
-      }
+      document.body.classList.remove('dark-mode');
+    }
+
+    // Clean up any dark mode classes on excluded pages
+    if (isExcludedPage) {
+      const darkElements = document.querySelectorAll('[class*="dark"]');
+      darkElements.forEach(element => {
+        Array.from(element.classList)
+          .filter(className => className.includes('dark'))
+          .forEach(className => element.classList.remove(className));
+      });
     }
 
     return () => {
-      document.body.classList.remove('dark-mode');
-      const darkElements = document.querySelectorAll('.dark-mode');
-      darkElements.forEach(element => {
-        element.classList.remove('dark-mode');
-      });
+      if (isExcludedPage) {
+        document.body.classList.remove('dark-mode');
+      }
     };
   }, [darkMode]);
 

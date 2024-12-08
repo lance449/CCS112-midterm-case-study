@@ -1,6 +1,8 @@
 .dashboard-container {
   display: flex;
   min-height: 100vh;
+  background-color: #ffffff !important;
+  color: #2d3748 !important;
 }
 
 .sidebar {
@@ -11,26 +13,82 @@
   top: 0;
   bottom: 0;
   z-index: 100;
+  background-color: #1a202c !important;
+  padding: 1rem;
 }
 
 .sidebar-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+.sidebar-title {
+  color: #f7fafc !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  margin: 0;
+  padding: 0;
+  opacity: 1 !important;
 }
 
 .sidebar .nav-link {
   padding: 0.8rem 1rem;
-  opacity: 0.8;
+  color: rgba(255, 255, 255, 0.9) !important;
+  opacity: 1;
   transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 .sidebar .nav-link:hover {
-  opacity: 1;
   background: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+  opacity: 1;
 }
 
 .sidebar .nav-link.active {
   background: rgba(255, 255, 255, 0.1);
   opacity: 1;
+  color: #ffffff !important;
+}
+
+.sidebar .nav-link svg,
+.sidebar .nav-link i {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+.sidebar h2,
+.sidebar h3,
+.sidebar .admin-title {
+  color: #ffffff !important;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+  opacity: 1 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar .logout-btn {
+  color: rgba(255, 255, 255, 0.9) !important;
+  opacity: 1;
+  font-weight: 500;
+}
+
+.sidebar .logout-btn:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .main-content {
@@ -40,11 +98,12 @@
 }
 
 .dashboard-header {
-  background: white;
+  background: white !important;
   padding: 1rem;
   margin-bottom: 2rem;
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #2d3748 !important;
 }
 
 .admin-form-group {
@@ -165,6 +224,8 @@
 
 .table {
   transition: all 0.3s ease;
+  color: #2d3748 !important;
+  background-color: #ffffff !important;
 }
 
 .table tbody tr {
@@ -282,3 +343,101 @@
   font-size: 1rem;
   margin-bottom: 0.5rem;
 } 
+
+.card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.table thead th {
+  background-color: #f8f9fa !important;
+  border-bottom-color: #e2e8f0 !important;
+  color: #2d3748 !important;
+}
+
+.table td {
+  border-color: #e2e8f0 !important;
+  color: #2d3748 !important;
+}
+
+.modal-content {
+  background-color: #ffffff !important;
+  color: #2d3748 !important;
+}
+
+.form-control {
+  background-color: #ffffff !important;
+  color: #2d3748 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.form-label, 
+.modal-title {
+  color: #2d3748 !important;
+}
+
+/* Add these styles for the headings */
+.dashboard-container h4,
+.dashboard-container h5 {
+  color: #1a202c !important;
+  font-weight: 600 !important;
+}
+
+/* Style for Search Item heading */
+.search-filter-container h5,
+.card-body h5 {
+  color: #1a202c !important;
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Style for Product Inventory heading */
+.product-inventory-heading {
+  color: #1a202c !important;
+  font-weight: 600 !important;
+  font-size: 1.2rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Style for Add a product heading */
+.add-product-heading {
+  color: #1a202c !important;
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* Style for the main dashboard title */
+.dashboard-header h4 {
+  color: #1a202c !important;
+  font-weight: 700 !important;
+  font-size: 1.5rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Make sure all text in cards is visible */
+.card-body {
+  color: #1a202c !important;
+}
+
+/* Style for any icons next to headings */
+.card-body h5 svg,
+.card-body h5 i {
+  margin-right: 0.5rem;
+  color: #4a5568 !important;
+}
+
+/* Override any Bootstrap text colors */
+.text-white {
+  color: #f7fafc !important;
+}
+
+.bg-dark {
+  background-color: #1a202c !important;
+}
+
+/* Override any Bootstrap dark text */
+.sidebar .mb-0 {
+  color: #f7fafc !important;
+}
