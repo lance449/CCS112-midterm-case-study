@@ -994,20 +994,14 @@ const ProductCatalog = () => {
               <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
                 <Card className="product-card h-100">
                   <div className="product-image-container">
-                    <img 
-                      src={product.image_path ? `http://localhost:8000/storage/${product.image_path}` : 'https://via.placeholder.com/200'} 
-                      alt={product.description}
+                    <Card.Img 
+                      variant="top" 
+                      src={product.image_url || 'placeholder.jpg'} 
                       className="product-image"
                       onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/200';
+                        e.target.src = '/placeholder.jpg';
                       }}
                     />
-                    {product.quantity <= 5 && product.quantity > 0 && (
-                      <Badge bg="warning" className="stock-warning">
-                        Low Stock
-                      </Badge>
-                    )}
                   </div>
                   <Card.Body className="d-flex flex-column">
                     <Card.Title className="product-title text-truncate">
@@ -1015,21 +1009,25 @@ const ProductCatalog = () => {
                     </Card.Title>
                     <div className="product-details">
                       <div className="price-tag">${formatPrice(product.price)}</div>
-                      <Badge bg={product.quantity > 0 ? 'success' : 'danger'} className="stock-badge">
+                      <Badge 
+                        bg={product.quantity > 0 ? 'success' : 'danger'} 
+                        className="stock-badge"
+                      >
                         {product.quantity > 0 ? `${product.quantity} in stock` : 'Out of Stock'}
                       </Badge>
+                    </div>
+                    <div className="product-info mt-2">
+                      <small className="text-muted">
+                        <div>Category: {product.category}</div>
+                        <div>Barcode: {product.barcode}</div>
+                      </small>
                     </div>
                     <Button 
                       className="mt-auto add-to-cart-btn"
                       variant={product.quantity === 0 ? 'secondary' : 'primary'}
-                      onClick={() => addToCart(product)}
-                      disabled={product.quantity === 0 || isUpdatingCart}
+                      onClick={() => handleAddToCart(product)}
+                      disabled={product.quantity === 0}
                     >
-                      {isUpdatingCart ? (
-                        <ButtonSpinner />
-                      ) : (
-                        <FontAwesomeIcon icon={faShoppingCart} className="me-2" />
-                      )}
                       {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
                     </Button>
                   </Card.Body>

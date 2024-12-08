@@ -224,6 +224,13 @@ const Dashboard = () => {
       return;
     }
 
+    // Add file size validation
+    if (newProduct.image && newProduct.image.size > 5 * 1024 * 1024) {
+      setAddErrors({ image: 'File size exceeds 5MB limit' });
+      notifyWarning('Please select an image under 5MB.');
+      return;
+    }
+
     setAddErrors({});
     try {
       const formData = new FormData();
@@ -271,6 +278,13 @@ const Dashboard = () => {
     const validationErrors = validateProductData(editProduct);
     if (Object.keys(validationErrors).length > 0) {
       setEditErrors(validationErrors);
+      return;
+    }
+
+    // Add file size validation for edit
+    if (editProduct.newImage && editProduct.newImage.size > 5 * 1024 * 1024) {
+      setEditErrors({ image: 'File size exceeds 5MB limit' });
+      notifyWarning('Please select an image under 5MB.');
       return;
     }
 
@@ -666,11 +680,16 @@ const Dashboard = () => {
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (file) {
+                      if (file.size > 5 * 1024 * 1024) {
+                        notifyWarning('File size exceeds 5MB limit');
+                        e.target.value = '';
+                        return;
+                      }
                       setNewProduct({ ...newProduct, image: file });
                     }
                   }}
                 />
-                <small className="text-muted">Maximum file size: 2MB. Supported formats: JPEG, PNG, GIF</small>
+                <small className="text-muted">Maximum file size: 5MB. Supported formats: JPEG, PNG, GIF</small>
               </Form.Group>
             </Form>
           </Modal.Body>
@@ -764,11 +783,16 @@ const Dashboard = () => {
                     onChange={(e) => {
                       const file = e.target.files[0];
                       if (file) {
+                        if (file.size > 5 * 1024 * 1024) {
+                          notifyWarning('File size exceeds 5MB limit');
+                          e.target.value = '';
+                          return;
+                        }
                         setEditProduct({ ...editProduct, newImage: file });
                       }
                     }}
                   />
-                  <small className="text-muted">Maximum file size: 2MB. Supported formats: JPEG, PNG, GIF</small>
+                  <small className="text-muted">Maximum file size: 5MB. Supported formats: JPEG, PNG, GIF</small>
                 </Form.Group>
               </Form>
             </Modal.Body>
