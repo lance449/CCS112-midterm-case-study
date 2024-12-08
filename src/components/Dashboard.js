@@ -13,6 +13,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
@@ -217,15 +219,28 @@ const Dashboard = () => {
 
   // Update the handleAddProduct function
   const handleAddProduct = async () => {
-    const validationErrors = validateProductData(newProduct);
-    if (Object.keys(validationErrors).length > 0) {
-      setAddErrors(validationErrors);
-      notifyWarning('Please fill in all required fields correctly.');
-      return;
-    }
-
-    setAddErrors({});
     try {
+      const validationErrors = validateProductData(newProduct);
+      
+      // Add file size validation
+      if (newProduct.image) {
+        if (newProduct.image.size > MAX_FILE_SIZE) {
+          setAddErrors({
+            ...validationErrors,
+            image: 'Image size must not exceed 5MB'
+          });
+          notifyWarning('Image size must not exceed 5MB');
+          return;
+        }
+      }
+
+      if (Object.keys(validationErrors).length > 0) {
+        setAddErrors(validationErrors);
+        notifyWarning('Please fill in all required fields correctly.');
+        return;
+      }
+
+      setAddErrors({});
       const formData = new FormData();
       formData.append('barcode', newProduct.barcode);
       formData.append('description', newProduct.description);
@@ -239,6 +254,10 @@ const Dashboard = () => {
       const response = await axios.post('http://127.0.0.1:8000/api/products', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          // You could add a progress indicator here if desired
         }
       });
       
@@ -254,7 +273,10 @@ const Dashboard = () => {
       });
       notifySuccess('Product added successfully! 🎉');
     } catch (error) {
-      if (error.response && error.response.data.errors) {
+      console.error('Error adding product:', error);
+      if (error.response?.data?.errors?.image) {
+        notifyError(`Image error: ${error.response.data.errors.image}`);
+      } else if (error.response?.data?.errors) {
         setAddErrors(error.response.data.errors);
         notifyError('Failed to add product. Please check the form.');
       } else {
@@ -268,14 +290,27 @@ const Dashboard = () => {
   const handleEditProduct = async () => {
     if (!editProduct) return;
 
-    const validationErrors = validateProductData(editProduct);
-    if (Object.keys(validationErrors).length > 0) {
-      setEditErrors(validationErrors);
-      return;
-    }
-
-    setEditErrors({});
     try {
+      const validationErrors = validateProductData(editProduct);
+      
+      // Add file size validation
+      if (editProduct.newImage) {
+        if (editProduct.newImage.size > MAX_FILE_SIZE) {
+          setEditErrors({
+            ...validationErrors,
+            image: 'Image size must not exceed 5MB'
+          });
+          notifyWarning('Image size must not exceed 5MB');
+          return;
+        }
+      }
+
+      if (Object.keys(validationErrors).length > 0) {
+        setEditErrors(validationErrors);
+        return;
+      }
+
+      setEditErrors({});
       const formData = new FormData();
       formData.append('barcode', editProduct.barcode);
       formData.append('description', editProduct.description);
@@ -287,17 +322,28 @@ const Dashboard = () => {
       }
       formData.append('_method', 'PUT');
 
-      const response = await axios.post(`http://127.0.0.1:8000/api/products/${editProduct.id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      const response = await axios.post(
+        `http://127.0.0.1:8000/api/products/${editProduct.id}`, 
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            // You could add a progress indicator here if desired
+          }
         }
-      });
+      );
 
       setProducts(products.map(p => p.id === editProduct.id ? response.data : p));
       setEditProduct(null);
       notifySuccess('Product updated successfully! 🎉');
     } catch (error) {
-      if (error.response && error.response.data.errors) {
+      console.error('Error updating product:', error);
+      if (error.response?.data?.errors?.image) {
+        notifyError(`Image error: ${error.response.data.errors.image}`);
+      } else if (error.response?.data?.errors) {
         setEditErrors(error.response.data.errors);
         notifyError('Failed to update product. Please check the form.');
       } else {
@@ -417,6 +463,43 @@ const Dashboard = () => {
     setAdminErrors({});
   };
 
+  // Add this helper function to validate file input
+  const validateFileInput = (file) => {
+    if (!file) return null;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+    const errors = [];
+
+    if (!validTypes.includes(file.type)) {
+      errors.push('File must be an image (JPEG, PNG, or GIF)');
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      errors.push('Image size must not exceed 5MB');
+    }
+
+    return errors.length > 0 ? errors.join(', ') : null;
+  };
+
+  // Update the file input handlers
+  const handleFileChange = (e, isEdit = false) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const error = validateFileInput(file);
+    if (error) {
+      notifyError(error);
+      e.target.value = ''; // Reset file input
+      return;
+    }
+
+    if (isEdit) {
+      setEditProduct(prev => ({ ...prev, newImage: file }));
+    } else {
+      setNewProduct(prev => ({ ...prev, image: file }));
+    }
+  };
+
   return (
     <div className="dashboard-container">
       <ToastContainer
@@ -530,18 +613,21 @@ const Dashboard = () => {
                         >
                           <td>
                             <img 
-                              src={product.image_path ? `http://localhost:8000/storage/${product.image_path}` : 'https://via.placeholder.com/50'} 
+                              src={product.image_path ? 
+                                `${process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000'}/storage/${product.image_path}` 
+                                : 'https://via.placeholder.com/80x80'} 
                               alt={product.description}
                               style={{ 
-                                width: '50px', 
-                                height: '50px', 
+                                width: '80px', 
+                                height: '80px', 
                                 objectFit: 'cover',
                                 borderRadius: '4px',
                                 border: '1px solid #e2e8f0'
                               }}
                               onError={(e) => {
+                                console.error('Image load error:', e);
                                 e.target.onerror = null;
-                                e.target.src = 'https://via.placeholder.com/50';
+                                e.target.src = 'https://via.placeholder.com/80x80';
                               }}
                             />
                           </td>

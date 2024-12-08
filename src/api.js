@@ -123,3 +123,29 @@ class ApiService {
     }
   }
 }
+
+// Add timeout and maxContentLength settings for large file uploads
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  timeout: 30000, // 30 seconds
+  maxContentLength: Infinity,
+  maxBodyLength: Infinity
+});
+
+// Use this instance for your API calls
+export const uploadFile = async (formData) => {
+  try {
+    const response = await axiosInstance.post('/products', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        // You can use this to show upload progress
+      }
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
