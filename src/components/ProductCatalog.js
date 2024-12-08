@@ -41,6 +41,7 @@ import LoadingSpinner from './LoadingSpinner';
 import { formatPrice, calculateItemTotal, calculateCartTotal } from '../utils/priceFormatter';
 import { Spinner, PageSpinner, ButtonSpinner } from '../Spinner';
 import { notifySuccess, notifyError, notifyInfo, notifyWarning } from '../utils/notifications';
+import Slider from './Slider';
 
 // Create a CartContext
 export const CartContext = React.createContext();
@@ -960,6 +961,7 @@ const ProductCatalog = () => {
         />
         
         <Container className="mt-5 pt-4">
+          <Slider products={products} />
           <div className="search-filter-container">
             <div className="filter-row">
               <Form.Select
